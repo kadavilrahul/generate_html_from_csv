@@ -1,1 +1,0 @@
-Added sample_config.json to have deault values for config.json

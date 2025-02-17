@@ -5,13 +5,6 @@ set -e
 
 echo "Starting setup process..."
 
-# Check if products.csv exists in the current directory
-if [ ! -f "products.csv" ]; then
-    echo "Error: products.csv not found in the current directory"
-    echo "Please place products.csv in the project root directory before running setup"
-    exit 1
-fi
-
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
     echo "jq is required but not installed. Installing jq..."
@@ -21,6 +14,10 @@ fi
 # Get configuration values from config.json
 PROJECT_DIR=$(jq -r '.project.directory' config.json)
 BASE_URL=$(jq -r '.project.baseUrl' config.json)
+DB_HOST=$(jq -r '.database.host' config.json)
+DB_USER=$(jq -r '.database.username' config.json)
+DB_PASS=$(jq -r '.database.password' config.json)
+DB_NAME=$(jq -r '.database.name' config.json)
 API_URL=$(jq -r '.api.url' config.json)
 API_KEY=$(jq -r '.api.consumerKey' config.json)
 API_SECRET=$(jq -r '.api.consumerSecret' config.json)
@@ -285,6 +282,227 @@ cat > views/product.ejs << EOL
 }
 .search-section{
     padding-left: 270px;
+}
+.search-drop-down select{
+    width: 100%;
+    padding: 0;
+    height: 100%;
+}
+.add-to-cart-section{
+    background-color: white;
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-radius: 20px;
+    box-shadow: 0 3px 6px -4px rgb(0 0 0 / .16), 0 3px 6px rgb(0 0 0 / .23);
+}
+.number-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            margin: 20px;
+            border: 1px solid #ddd;
+            border-radius: 99px;
+            overflow: hidden;
+            margin: 30px 90px;
+        }
+
+        .number-input button {
+            background-color: #ddd;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 0;
+            height: 40px; /* Match the input's height */
+            padding: 4px 4px;
+        }
+
+        .number-input button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .number-input input[type="number"] {
+            width: 37px;
+            text-align: center;
+            font-size: 16px;
+            border: none;
+            height: 40px; /* Match the button's height */
+            background-color: #ccc;
+        }
+
+        .number-input button:first-child {
+            border-right: 1px solid #ddd; /* Seamless border between button and input */
+        }
+
+        .number-input button:last-child {
+            border-left: 1px solid #ddd; /* Seamless border between button and input */
+        }
+        .add-to-cart-button{
+            background-color: #4b9cd2;
+            color: white;
+            border-radius: 20px;
+        }
+        .add-to-cart-section-bottom{
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 3px 6px -4px rgb(0 0 0 / .16), 0 3px 6px rgb(0 0 0 / .23);
+            padding: 30px;
+
+
+        }
+        .add-to-cart-section-bottom li{
+            border-bottom: 1px solid grey;
+            padding: 7px 0 7px 25px;
+            font-size: 16px;
+        }
+        .Description-section{
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+        }
+        .Description-section .description-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.Description-section .arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.Description-section .arrow.open {
+    transform: rotate(180deg);
+}
+
+.Description-details {
+    max-height: none; /* Full height by default */
+    opacity: 1;       /* Fully visible by default */
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.Description-details.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+.description-toggle{
+    font-size: 17.6px;
+    font-weight: 400;
+    color:#777777
+}
+.Description-details strong{
+    font-size: 12.8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #777777;
+}
+.top-footer{
+    height: 40px;
+    background-color: #777;
+}
+footer{
+    background-color: #5b5b5b;
+    display: flex;
+    justify-content: space-between; /* Ensures both divs are at the ends of the line */
+    align-items: center;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+.footer .container {
+    margin: 0; /* Removes any default margins */
+}
+
+.text-right {
+    text-align: right;
+}
+.Copyright{
+    color: #a5a4a4;
+}
+.payment-icons i{
+    font-size: 40px;
+    margin-right: 10px;
+
+}
+/* Style to highlight the selected thumbnail */
+#thumbnailSlider img:hover {
+    opacity: 0.7;
+    transform: scale(1.1);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#thumbnailSlider img.active {
+    border: 2px solid #007bff; /* Border color when active */
+}
+.logo-image{
+    width:200px;
+    height: 90px;
+}
+
+/* Adjust logo for mobile */
+@media (max-width: 768px) {
+    #logo {
+        margin: 0 auto; /* Center the logo */
+        text-align: center;
+    }
+
+    .navbar-toggler {
+        position: absolute;
+        left: 10px; /* Position menu button on the left */
+    }
+
+    .collapse.navbar-collapse {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        height: 100%;
+        width: 250px;
+        background: #f8f9fa;
+        z-index: 1050;
+        overflow-y: auto;
+        transition: left 0.3s ease-in-out;
+    }
+
+    .collapse.navbar-collapse.show {
+        left: 0;
+    }
+
+    .navbar-nav {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .nav-item {
+        margin-bottom: 1rem;
+    }
+    #navbarContent {
+    position: fixed; /* Keep the menu fixed */
+    top: 0;
+     /* Initially hide the menu off-screen */
+    height: 100vh; /* Full height for the menu */
+    width: 350px; /* Set the width of the sliding menu */
+    background-color: white; /* Menu background color */
+    z-index: 1050; /* Ensure it stays on top */
+    transition: transform 0.3s ease-in-out; /* Smooth sliding animation */
+    transform: translateX(-100%); /* Start off-screen */
+}
+
+#navbarContent.show {
+    transform: translateX(0); /* Slide into view when shown */
+}
+.collapse .btn-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+.search-section{
+    padding-left: 50px;
+    padding-top: 20px;
 }
 .m_search{
     margin-top: 100px;
@@ -725,6 +943,28 @@ function sanitizeFilename(filename) {
         .replace(/(^-|-$)/g, '');
 }
 
+// Function to generate products XML
+async function generateProductsXML(products) {
+    try {
+        const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<products>
+    ${products.map(product => `
+    <product>
+        <title><![CDATA[${product.Title}]]></title>
+        <price><![CDATA[${product['Regular Price']}]]></price>
+        <product_link><![CDATA[${PRODUCTS_BASE_URL}/${sanitizeFilename(product.Title)}.html]]></product_link>
+        <category><![CDATA[${product.Category}]]></category>
+        <image_url><![CDATA[${IMAGES_BASE_URL}/${sanitizeFilename(product.Title)}${path.extname(product.Image) || '.jpg'}]]></image_url>
+    </product>`).join('')}
+</products>`;
+
+        fs.writeFileSync(path.join(dataDir, 'products_database.xml'), xmlContent);
+        console.log('Products XML generated successfully!');
+    } catch (error) {
+        console.error('Error generating XML:', error);
+    }
+}
+
 // Function to generate sitemap
 async function generateSitemap(products) {
     const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
@@ -797,6 +1037,9 @@ fs.createReadStream(path.join(dataDir, 'products.csv'))
             // Generate sitemap
             await generateSitemap(allProducts);
 
+            // Generate products XML
+            await generateProductsXML(allProducts);
+
             console.log('Processing complete!');
         } catch (error) {
             console.error('Error in final processing:', error);
@@ -815,14 +1058,4 @@ echo "Setting web server permissions..."
 sudo chown -R www-data:www-data "$PROJECT_DIR"
 
 echo "Setup completed successfully!"
-
-# Ask user if they want to generate HTML pages
-read -p "Do you want to generate HTML pages now? (y/n): " generate_pages
-
-if [ "$generate_pages" = "y" ] || [ "$generate_pages" = "Y" ]; then
-    echo "Generating HTML pages..."
-    cd "$PROJECT_DIR" && node parse-csv.js
-    echo "HTML page generation complete!"
-else
-    echo "You can generate HTML pages later by running: cd $PROJECT_DIR && node parse-csv.js"
-fi
+echo "Now run: cd $PROJECT_DIR && node parse-csv.js"
