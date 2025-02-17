@@ -11,6 +11,7 @@ file_versioning.sh
 *.xml
 setup_file_versioning.sh
 .versioningignore
+config.json
 
 
 
