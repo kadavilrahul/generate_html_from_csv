@@ -6,7 +6,7 @@ set -e
 echo "Starting setup process..."
 
 # Define configuration variables
-PROJECT_DIR="/var/www/test.silkroademart.com"
+PROJECT_DIR="$(pwd)"
 
 # Create project structure
 echo "Creating directory structure..."
@@ -858,13 +858,15 @@ const path = require('path');
 const ejs = require('ejs');
 
 // Define directories
-const baseDir = '/var/www/test.silkroademart.com';
+const baseDir = '$PROJECT_DIR';
 const outputDir = path.join(baseDir, 'public/products');
 const imagesDir = path.join(baseDir, 'public/images');
 const dataDir = path.join(baseDir, 'data');
 
 // Base URL configurations
-const BASE_URL = 'https://test.silkroademart.com';
+const baseDir = process.env.PWD; // This will get the current working directory
+const folderName = baseDir.split('/').pop(); // Gets the last part of the path
+const BASE_URL = `https://${folderName}`;
 const PRODUCTS_BASE_URL = `${BASE_URL}/public/products`;
 const IMAGES_BASE_URL = `${BASE_URL}/public/images`;
 
