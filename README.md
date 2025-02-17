@@ -1,3 +1,5 @@
+Trying to add features delete unnecessary file and folder after running node.js, 
+
 # HTML Product Generator
 
 This project generates static HTML product pages, sitemap, and product XML from CSV data for a website.
