@@ -1,0 +1,36 @@
+{
+  "project": {
+    "directory": "/var/www/main.silkroademart.com",
+    "baseUrl": "https://main.silkroademart.com"
+  },
+  "database": {
+    "host": "78.47.134.46",
+    "username": "products_user",
+    "password": "products_2@",
+    "name": "products_db",
+    "rootPassword": "Karimpadam2@"
+  },
+  "api": {
+    "url": "https://wholesale.silkroademart.com/wp-json/wc/v3",
+    "consumerKey": "ck_7f762d0bb0a2243c237d76fc21c1c4210b3c9453",
+    "consumerSecret": "cs_70dda921540d202bcdd980ddbeb8c7adb3f8d518"
+  },
+  "cart": {
+    "baseUrl": "https://wholesale.silkroademart.com/cart/"
+  },
+  "navigation": {
+    "shop": "https://silkroademart.com/shop/",
+    "categories": "https://silkroademart.com/elements/product-categories/",
+    "about": "https://silkroademart.com/about/",
+    "contact": "https://silkroademart.com/contact-us/"
+  },
+  "branding": {
+    "logoUrl": "https://silkroademart.com/",
+    "logoImageUrl": "https://i0.wp.com/silkroademart.com/wp-content/uploads/2024/09/Silkroademart-logo-7.png",
+    "logoTitle": "SilkRoade-Mart",
+    "faviconUrl": "https://silkroademart.com/wp-content/uploads/2023/06/icons8-buying-64.png"
+  },
+  "copyright": {
+    "text": "CopyrightSilkRoade-Mart"
+  }
+}

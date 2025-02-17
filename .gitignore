@@ -3,7 +3,6 @@
 backups/
 *cache.db*
 check_versioning.sh
-config.json
 *.ejs
 file_versioning.sh
 *.gitignore
