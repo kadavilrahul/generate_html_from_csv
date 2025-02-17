@@ -1,0 +1,36 @@
+{
+    "project": {
+      "directory": "/path/to/project",
+      "baseUrl": "https://yourdomain.com"
+    },
+    "database": {
+      "host": "your_db_host",
+      "username": "your_db_user",
+      "password": "your_db_password",
+      "name": "your_db_name",
+      "rootPassword": "your_db_root_password"
+    },
+    "api": {
+      "url": "https://yourdomain.com/wp-json/wc/v3",
+      "consumerKey": "your_consumer_key",
+      "consumerSecret": "your_consumer_secret"
+    },
+    "cart": {
+      "baseUrl": "https://yourdomain.com/cart/"
+    },
+    "navigation": {
+      "shop": "https://yourdomain.com/shop/",
+      "categories": "https://yourdomain.com/elements/product-categories/",
+      "about": "https://yourdomain.com/about/",
+      "contact": "https://yourdomain.com/contact-us/"
+    },
+    "branding": {
+      "logoUrl": "https://yourdomain.com/",
+      "logoImageUrl": "https://yourdomain.com/logo.png",
+      "logoTitle": "Your Brand",
+      "faviconUrl": "https://yourdomain.com/favicon.png"
+    },
+    "copyright": {
+      "text": "Copyright Your Brand"
+    }
+  }
