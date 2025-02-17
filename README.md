@@ -10,12 +10,14 @@ This project generates static HTML product pages, sitemap, and product XML from 
 
 ## Setup
 
-1. MOve to the correctlocation in the terminal where you want to generated HTML pages. Clone the repository filess with below command:
+1. Move to the correct location in the terminal where you want to generated HTML pages. Clone the repository filess with below commands:
+   ```
+   cd /path/to/generate/html/pages/
+   ```
    ```
    git clone https://github.com/kadavilrahul/generate_html_from_csv.git .
 
    ```
-
 
 2. Rename `sample_config.json` to `config.json` and update the settings as per your requirements.
 
