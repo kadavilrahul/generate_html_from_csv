@@ -10,9 +10,16 @@ This project generates static HTML product pages, sitemap, and product XML from 
 
 ## Setup
 
-1. Rename `sample_config.json` to `config.json` and update the settings as per your requirements.
+1. MOve to the correctlocation in the terminal where you want to generated HTML pages. Clone the repository filess with below command:
+   ```
+   git clone https://github.com/kadavilrahul/generate_html_from_csv.git .
 
-2. Replace `products.csv` with your version of the file containing the required data.
+   ```
+
+
+2. Rename `sample_config.json` to `config.json` and update the settings as per your requirements.
+
+3. Replace `products.csv` with your version of the file containing the required data.
 The CSV should have the following columns:
    - Title
    - Regular Price
@@ -21,7 +28,7 @@ The CSV should have the following columns:
    - Short_description
    - description
 
-3. Run the setup script:
+4. Run the setup script:
    ```bash
    bash setup.sh
    ```
@@ -31,7 +38,7 @@ The CSV should have the following columns:
    - Set up EJS templates
    - Configure API credentials
 
-4. Run the parser to generate product pages:
+5. Run the parser to generate product pages:
 ```bash
 node parse-csv.js
 ```
@@ -66,3 +73,8 @@ This will:
 
 For any issues or questions, please contact the Silk Road e-Mart development team.
 
+## Note
+If you want to clone the branch then use following command:
+```
+git clone -b version-01 https://github.com/kadavilrahul/generate_html_from_csv.git .
+```
