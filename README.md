@@ -10,12 +10,9 @@ This project generates static HTML product pages, sitemap, and product XML from 
 
 ## Setup
 
-1. Configure your settings in `config.json`:
-   ```json
- 
-2. Rename `sample_config.json` to `config.json` and update the  settings.
+1. Rename `sample_config.json` to `config.json` and update the settings as per your requirements.
 
-3. Replace `products.csv` with your version of the file containing the required data.
+2. Replace `products.csv` with your version of the file containing the required data.
 The CSV should have the following columns:
    - Title
    - Regular Price
@@ -24,7 +21,7 @@ The CSV should have the following columns:
    - Short_description
    - description
 
-4. Run the setup script:
+3. Run the setup script:
    ```bash
    bash setup.sh
    ```
@@ -34,9 +31,7 @@ The CSV should have the following columns:
    - Set up EJS templates
    - Configure API credentials
 
-## Usage
-
-Run the parser to generate product pages:
+4. Run the parser to generate product pages:
 ```bash
 node parse-csv.js
 ```
