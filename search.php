@@ -29,10 +29,10 @@ function esc_html($str) {
 
 // Database configuration
 $db_config = array(
-    'host'     => 'localhost',
-    'username' => 'products_user',
-    'password' => 'products_2@',
-    'database' => 'products_db'
+    'host'     => '78.47.134.46',
+    'username' => 'all_products_user',
+    'password' => 'all_products_2@',
+    'database' => 'all_products_db'
 );
 
 // Get and sanitize the search term

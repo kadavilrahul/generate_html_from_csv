@@ -5,58 +5,20 @@ set -e
 
 echo "Starting setup process..."
 
-# Check if jq is installed
-if ! command -v jq &> /dev/null; then
-    echo "jq is required but not installed. Installing jq..."
-    sudo apt-get update && sudo apt-get install -y jq
-fi
-
-# Get configuration values from config.json
-PROJECT_DIR=$(jq -r '.project.directory' config.json)
-BASE_URL=$(jq -r '.project.baseUrl' config.json)
-DB_HOST=$(jq -r '.database.host' config.json)
-DB_USER=$(jq -r '.database.username' config.json)
-DB_PASS=$(jq -r '.database.password' config.json)
-DB_NAME=$(jq -r '.database.name' config.json)
-API_URL=$(jq -r '.api.url' config.json)
-API_KEY=$(jq -r '.api.consumerKey' config.json)
-API_SECRET=$(jq -r '.api.consumerSecret' config.json)
-FAVICON_URL=$(jq -r '.branding.faviconUrl' config.json)
-
-# Function to move files to correct locations
-move_project_files() {
-    echo "Moving project files to correct locations..."
-    
-    # Move search.php to public/products if it exists
-    if [ -f "$PROJECT_DIR/search.php" ]; then
-        echo "Moving search.php to public/products directory..."
-        mv "$PROJECT_DIR/search.php" "$PROJECT_DIR/public/products/"
-        echo "search.php moved successfully"
-    else
-        echo "Warning: search.php not found in project root directory"
-    fi
-
-    # Move products.csv to data directory if it exists
-    if [ -f "$PROJECT_DIR/products.csv" ]; then
-        echo "Moving products.csv to data directory..."
-        mv "$PROJECT_DIR/products.csv" "$PROJECT_DIR/data/"
-        echo "products.csv moved successfully"
-    else
-        echo "Warning: products.csv not found in project root directory"
-    fi
-}
+# Define configuration variables
+PROJECT_DIR="/var/www/test.silkroademart.com"
 
 # Create project structure
 echo "Creating directory structure..."
-sudo mkdir -p "$PROJECT_DIR"/{data,views,public/{products,images}}
+sudo mkdir -p $PROJECT_DIR/{data,views,public/{products,images}}
 
-# Set proper permissions
+# Set proper ownership and permissions
 echo "Setting permissions..."
-sudo chown -R "$USER:$USER" "$PROJECT_DIR"
-sudo chmod -R 755 "$PROJECT_DIR"
+sudo chown -R $USER:$USER $PROJECT_DIR
+sudo chmod -R 755 $PROJECT_DIR
 
 # Navigate to project directory
-cd "$PROJECT_DIR"
+cd $PROJECT_DIR
 
 # Initialize Node.js project and install dependencies
 echo "Initializing Node.js project..."
@@ -65,45 +27,44 @@ npm init -y
 echo "Installing dependencies..."
 npm install csv-parser ejs axios @json2csv/node
 
-# Create EJS template with injected configuration
+# Create EJS template
 echo "Creating EJS template..."
-cat > views/product.ejs << EOL
+cat > views/product.ejs << 'EOL'
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
-    <link rel="icon" type="image/x-icon" href="${FAVICON_URL}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        .loading-spinner {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1002;
-        }
-        .success-message, .error-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px;
-            border-radius: 4px;
-            display: none;
-            z-index: 1001;
-            color: white;
-        }
-        .success-message {
-            background-color: #4CAF50;
-        }
-        .error-message {
-            background-color: #f44336;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+      .loading-spinner {
+          display: none;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 1002;
+      }
+      .success-message, .error-message {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 15px;
+          border-radius: 4px;
+          display: none;
+          z-index: 1001;
+          color: white;
+      }
+      .success-message {
+          background-color: #4CAF50;
+      }
+      .error-message {
+          background-color: #f44336;
+      }
 
-        body{
+      body{
         background-color: rgb(237, 237, 237);
     }
     #logo {
@@ -714,7 +675,7 @@ footer{
 
     <footer class="py-3 footer">
         <div class=" text-left Copyright">
-            <p>Copyright 2024  Silk Road e-Mart</p>
+            <p>Copyright 2024 ©  Silk Road e-Mart</p>
         </div>
         <div class="text-right">
             <nav class="d-flex align-items-center flex-grow-1">
@@ -744,10 +705,10 @@ footer{
 <div id="successMessage" class="success-message">Operation successful!</div>
 <div id="errorMessage" class="error-message">An error occurred. Please try again.</div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const API_URL = "${API_URL}";
-    const CREDENTIALS = btoa("${API_KEY}:${API_SECRET}");
-    const BASE_URL = "${BASE_URL}";
+    const API_URL = 'https://wholesale.silkroademart.com/wp-json/wc/v3';
+    const CREDENTIALS = btoa('ck_7f762d0bb0a2243c237d76fc21c1c4210b3c9453:cs_70dda921540d202bcdd980ddbeb8c7adb3f8d518');
 
     let createdProductId = null;
 
@@ -809,7 +770,7 @@ footer{
 
             // Redirect to WooCommerce cart with the product added
             const quantity = document.querySelector('input[name="quantity"]').value;
-            const cartUrl = `${BASE_URL}/cart/?add-to-cart=${createdProductId}&quantity=${quantity}`;
+            const cartUrl = `https://wholesale.silkroademart.com/cart/?add-to-cart=${createdProductId}&quantity=${quantity}`;
             window.location.href = cartUrl;
         } catch (error) {
             console.error('Error:', error);
@@ -896,17 +857,14 @@ const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
 
-// Load configuration from config.json
-const config = require('./config.json');
-
 // Define directories
-const baseDir = config.project.directory;
+const baseDir = '/var/www/test.silkroademart.com';
 const outputDir = path.join(baseDir, 'public/products');
 const imagesDir = path.join(baseDir, 'public/images');
 const dataDir = path.join(baseDir, 'data');
 
 // Base URL configurations
-const BASE_URL = config.project.baseUrl;
+const BASE_URL = 'https://test.silkroademart.com';
 const PRODUCTS_BASE_URL = `${BASE_URL}/public/products`;
 const IMAGES_BASE_URL = `${BASE_URL}/public/images`;
 
@@ -1050,12 +1008,11 @@ fs.createReadStream(path.join(dataDir, 'products.csv'))
     });
 EOL
 
-# Move files to correct locations after directories are created
-move_project_files
-
 # Set web server permissions
 echo "Setting web server permissions..."
-sudo chown -R www-data:www-data "$PROJECT_DIR"
+sudo chown -R www-data:www-data $PROJECT_DIR
+sudo chmod -R 755 $PROJECT_DIR
 
 echo "Setup completed successfully!"
-echo "Now run: cd $PROJECT_DIR && node parse-csv.js"
+echo "Please add your CSV file to the $PROJECT_DIR/data directory"
+echo "Then run: cd $PROJECT_DIR && node parse-csv.js"
