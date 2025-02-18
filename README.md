@@ -1,18 +1,28 @@
-# Instructions to run shellscript
-First, make the script executable:
+# Development Environment Setup Script
 
-# Modify and set correct varialbles in lines 9, 861, 867 in setup.sh file which looks like below three lines.
-# PROJECT_DIR=""
-# const baseDir = '';
-# const BASE_URL = '';
+This repository contains a setup script to automate the installation of development tools and configurations on Ubuntu/Debian-based systems.
 
-Set permissions
-chmod +x /var/www/test.silkroademart.com/setup.sh
-Run the script:
-sudo /var/www/test.silkroademart.com/setup.sh
+## Prerequisites
 
-After the script completes add your CSV file to data directory
-Run command as shown on terminal
+- Ubuntu/Debian-based operating system
+- Sudo privileges
+- Internet connection
+
+## Installation
+
+1. Clone this repository:
+
+```bash
+cd <project-folder>
+```
+```bash
+git clone https://github.com/kadavilrahul/generate_html_from_csv .
+```
+
+
+
+
+
 
 Create database or add products to existing databse for the newly created products.
 
