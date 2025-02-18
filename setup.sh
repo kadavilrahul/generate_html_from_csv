@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/bin/bash# 
+
+
+
 
 # Exit on any error
 set -e
@@ -16,12 +19,6 @@ sudo mkdir -p $PROJECT_DIR/{data,views,public/{products,images}}
 echo "Setting permissions..."
 sudo chown -R $USER:$USER $PROJECT_DIR
 sudo chmod -R 755 $PROJECT_DIR
-
-# Navigate to project directory
-cd $PROJECT_DIR
-
-# Initialize Node.js project and install dependencies
-echo "Initializing Node.js project..."
 npm init -y
 
 echo "Installing dependencies..."
@@ -575,7 +572,6 @@ footer{
                     </div>
                 </div>
             </div>
-        </nav>
         
     </header>
     <section>
@@ -1018,6 +1014,31 @@ echo "Setting web server permissions..."
 sudo chown -R www-data:www-data $PROJECT_DIR
 sudo chmod -R 755 $PROJECT_DIR
 
+# Move products.csv to data directory if it exists
+if [ -f "products.csv" ]; then
+    mv products.csv data/
+    echo "Moved products.csv to data directory"
+else
+    echo "Warning: products.csv not found in current directory"
+fi
+
 echo "Setup completed successfully!"
-echo "Please add your CSV file to the $PROJECT_DIR/data directory"
-echo "Then run: cd $PROJECT_DIR && node parse-csv.js"
+
+if [ -f "search.php" ]; then
+    mv search.php public/products/
+    echo "Moved search.php to public/products directory"
+else
+    echo "Warning: search.php not found in current directory"
+fi
+
+# Ask user if they want to run parse-csv.js
+read -p "Do you want to run parse-csv.js now? (y/n): " answer
+case ${answer:0:1} in
+    y|Y )
+        echo "Running parse-csv.js..."
+        node parse-csv.js
+        ;;
+    * )
+        echo "Skipping parse-csv.js execution. You can run it later using 'node parse-csv.js'"
+        ;;
+esac
