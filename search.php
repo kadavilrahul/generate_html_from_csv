@@ -29,7 +29,7 @@ function esc_html($str) {
 
 // Database configuration
 $db_config = array(
-    'host'     => 'localhost',
+    'host'     => 'loaclhost',
     'username' => 'products_user',
     'password' => 'products_2@',
     'database' => 'products_db'
