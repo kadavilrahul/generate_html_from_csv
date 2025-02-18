@@ -126,8 +126,6 @@ In search.php modify lines 25, 26, 27, 28 to enter correct variables
     'password' => 'all_products_2@',
     'database' => 'all_products_db'
 
-To remove or delete folder
-rm -r /var/www/new.silkroademart.com
 
 Empty the folder
-sudo rm -rf /var/www/new.silkroademart.com/*
+rm -rf /var/www/your_website.com/{*,.*}
