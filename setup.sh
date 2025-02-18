@@ -516,8 +516,8 @@ footer{
     
                 <!-- Logo -->
                 <div id="logo" class="flex-col logo">
-                    <a href="https://silkroademart.com/" title="Silk Road e-Mart">
-                        <img class="logo-image"  src="https://i0.wp.com/silkroademart.com/wp-content/uploads/2024/09/Silkroademart-logo-7.png?fit=922%2C743&amp;ssl=1" alt="Silk Road e-Mart">
+                    <a href="https://your_website.com/" title="Your website name">
+                        <img class="logo-image"  src="https://your_website.com/logo.png" alt="Your_website_name">
                     </a>
                 </div>
     
@@ -545,10 +545,10 @@ footer{
             
                     </div>
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="https://silkroademart.com/shop//">Shop</a></li>
-                        <li class="nav-item"><a class="nav-link" href="https://silkroademart.com/elements/product-categories/">Categories</a></li>
-                        <li class="nav-item"><a class="nav-link" href="https://silkroademart.com/about/">About</a></li>
-                        <li class="nav-item"><a class="nav-link" href="https://silkroademart.com/contact-us/">Contact</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://your_webiste.com/shop//">Shop</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://your_webiste.com/elements/product-categories/">Categories</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://your_webiste.com/about/">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://your_webiste.com/contact-us/">Contact</a></li>
                     </ul>
                     <div class="d-flex ms-auto">
                         <!-- Login Link -->
@@ -703,8 +703,8 @@ footer{
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const API_URL = 'https://wholesale.silkroademart.com/wp-json/wc/v3';
-    const CREDENTIALS = btoa('ck_7f762d0bb0a2243c237d76fc21c1c4210b3c9453:cs_70dda921540d202bcdd980ddbeb8c7adb3f8d518');
+    const API_URL = 'https://your_website.com/wp-json/wc/v3';
+    const CREDENTIALS = btoa('ck_xxxx:cs_xxxx');
 
     let createdProductId = null;
 
@@ -766,7 +766,7 @@ footer{
 
             // Redirect to WooCommerce cart with the product added
             const quantity = document.querySelector('input[name="quantity"]').value;
-            const cartUrl = `https://wholesale.silkroademart.com/cart/?add-to-cart=${createdProductId}&quantity=${quantity}`;
+            const cartUrl = `https://your_website.com/cart/?add-to-cart=${createdProductId}&quantity=${quantity}`;
             window.location.href = cartUrl;
         } catch (error) {
             console.error('Error:', error);
