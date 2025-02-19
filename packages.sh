@@ -11,3 +11,5 @@ sudo apt install -y \
     postgresql \
     postgresql-contrib \
     libpq-dev
+    apt-get install php-pgsql
+    systemctl restart apache2
