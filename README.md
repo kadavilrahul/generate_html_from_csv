@@ -22,7 +22,7 @@ git clone https://github.com/kadavilrahul/generate_html_from_csv .
 ```
 3. Modify follwing lines in setup.sh
 
-    706,707,769,519,520,548,549,550,551
+    706, 707, 769, 519, 520, 548, 549, 550, 551
 
 4. Run setup.sh
 
