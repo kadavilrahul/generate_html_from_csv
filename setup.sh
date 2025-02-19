@@ -671,7 +671,7 @@ footer{
 
     <footer class="py-3 footer">
         <div class=" text-left Copyright">
-            <p>Copyright 2024 ©  Silk Road e-Mart</p>
+            <p>Copyright 2024 © </p>
         </div>
         <div class="text-right">
             <nav class="d-flex align-items-center flex-grow-1">
@@ -942,7 +942,7 @@ async function generateSitemap(products) {
     `).join('')}
 </urlset>`;
 
-    fs.writeFileSync(path.join(baseDir, 'sitemap.xml'), sitemapContent);
+    fs.writeFileSync(path.join(dataDir, 'sitemap.xml'), sitemapContent);
     console.log('Sitemap generated successfully!');
 }
 
@@ -1042,3 +1042,23 @@ case ${answer:0:1} in
         echo "Skipping parse-csv.js execution. You can run it later using 'node parse-csv.js'"
         ;;
 esac
+
+# Cleanup section
+echo "Starting cleanup process..."
+
+# Create temporary directory for data and public folders
+mkdir -p temp_backup
+mv data temp_backup/
+mv public temp_backup/
+
+# Remove everything except temp_backup
+find . -maxdepth 1 ! -name 'temp_backup' ! -name '.' ! -name '..' -exec rm -rf {} +
+
+# Move data and public folders back
+mv temp_backup/data ./
+mv temp_backup/public ./
+
+# Remove temporary backup directory
+rm -rf temp_backup
+
+echo "Cleanup completed! Only data and public folders remain."
