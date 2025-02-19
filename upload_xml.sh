@@ -185,4 +185,9 @@ python3 $SCRIPT_NAME
 echo "Deactivating Python virtual environment..."
 deactivate
 
+# 6. Clean up files and directories
+echo "Cleaning up..."
+rm -rf $VENV_NAME
+rm $SCRIPT_NAME
+
 echo "Process completed successfully!"
