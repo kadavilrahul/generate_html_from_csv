@@ -1017,7 +1017,9 @@ sudo chmod -R 755 $PROJECT_DIR
 # Move products.csv to data directory if it exists
 if [ -f "products.csv" ]; then
     mv products.csv data/
-    echo "Moved products.csv to data directory"
+    mv create_database.py data/
+    mv packages.sh data/
+    echo "Moved products.csv, create_database.py and packages.sh to data directory"
 else
     echo "Warning: products.csv not found in current directory"
 fi
