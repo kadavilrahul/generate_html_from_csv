@@ -1019,6 +1019,7 @@ if [ -f "products.csv" ]; then
     mv products.csv data/
     mv create_database.sh data/
     mv packages.sh data/
+    mv upload_xml.sh data/
     echo "Moved products.csv, create_database.py and packages.sh to data directory"
 else
     echo "Warning: products.csv not found in current directory"
