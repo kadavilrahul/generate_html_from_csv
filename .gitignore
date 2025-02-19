@@ -16,3 +16,4 @@ setup_file_versioning.sh
 *.webp
 *.xml
 config.json
+replace.sh
