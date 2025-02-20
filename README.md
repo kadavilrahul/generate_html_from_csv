@@ -30,7 +30,7 @@ Run replace.sh
 bash replace.sh
 ```
 
-6. Run packages.sh
+4. Run packages.sh
 
 ```bash 
 bash packages.sh
