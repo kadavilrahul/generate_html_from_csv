@@ -10,6 +10,7 @@ sudo apt install -y \
     python3-pip \
     postgresql \
     postgresql-contrib \
+    xmlstarlet
     libpq-dev
     apt-get install php-pgsql
     systemctl restart apache2
