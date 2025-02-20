@@ -40,6 +40,11 @@ bash packages.sh
 ```bash
 bash setup.sh
 ```
+7. Run convert.sh
+
+```bash
+bash convert.sh
+```
 
 6. Run create_database.sh
 
