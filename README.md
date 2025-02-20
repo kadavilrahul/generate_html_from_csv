@@ -24,10 +24,21 @@ git clone https://github.com/kadavilrahul/generate_html_from_csv .
 
     706, 707, 769, 519, 520, 548, 549, 550, 551
 
-4. Run setup.sh
+4. Run packages.sh
+
+```bash 
+bash packages.sh
+```
+5. Run setup.sh
 
 ```bash
 bash setup.sh
+```
+
+6. Run create_database.sh
+
+```bash
+bash create_database.sh
 ```
 
 
