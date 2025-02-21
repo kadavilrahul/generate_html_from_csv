@@ -69,6 +69,20 @@ bash data/check_data.sh
 ```bash
 bash data/install_pgadmin.sh
 ```
+After installation:
+
+Open your web browser
+Navigate to: http://your_server_ip/pgadmin4
+Log in with your email and password
+Add a new server connection using:
+Host: localhost
+Port: 5432
+Database: products_db
+Username: products_user
+Password: products_2@
+This will give you a web-based interface to manage your PostgreSQL database.
+
+
 
 
 
