@@ -40,19 +40,29 @@ bash packages.sh
 ```bash
 bash setup.sh
 ```
-7. Run convert.sh
+6. Run convert.sh
 
 ```bash
 bash data/convert.sh
 ```
 
-6. Run create_database.sh
+7. Run create_database.sh
 
 ```bash
 bash data/create_database.sh
 ```
 
+8. Run create_database.sh
 
+```bash
+bash data/import_csv.sh
+```
+
+9. Run create_database.sh
+
+```bash
+bash data/check_data.sh
+```
 
 
 
