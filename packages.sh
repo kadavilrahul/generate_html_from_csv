@@ -40,3 +40,9 @@ fi
 
 echo "
 All packages installed successfully!
+
+Next steps:
+1. Create database:    bash data/create_database.sh
+2. Import CSV data:    bash data/import_csv.sh
+3. Verify data:        bash data/check_data.sh
+"
