@@ -7,6 +7,10 @@ This repository contains a setup script to automate the installation of developm
 - Ubuntu/Debian-based operating system
 - Sudo privileges
 - Internet connection
+- Apache/Nginx server
+- php
+
+## Tested on: Ubuntu 24.04 Apache
 
 ## Installation
 
