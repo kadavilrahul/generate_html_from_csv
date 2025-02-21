@@ -10,7 +10,7 @@ This repository contains a setup script to automate the installation of developm
 - Apache/Nginx server
 - php
 
-## Tested on: Ubuntu 24.04 Apache
+### Tested on: Ubuntu 24.04 Apache
 
 ## Installation
 
