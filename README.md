@@ -64,6 +64,11 @@ bash data/import_csv.sh
 bash data/check_data.sh
 ```
 
+10. Run create_database.sh
+
+```bash
+bash data/install_pgadmin.sh
+```
 
 
 
