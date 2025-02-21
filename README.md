@@ -43,13 +43,13 @@ bash setup.sh
 7. Run convert.sh
 
 ```bash
-bash convert.sh
+bash data/convert.sh
 ```
 
 6. Run create_database.sh
 
 ```bash
-bash create_database.sh
+bash data/create_database.sh
 ```
 
 
