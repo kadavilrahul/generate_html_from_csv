@@ -22,6 +22,9 @@ https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-to-another-serve
 ```bash
 git clone https://github.com/kadavilrahul/generate_html_from_csv
 ```
+```bash
+cd generate_html_from_csv
+```
 
 2. Install Apache and Posstgres on new server if already installed
 
