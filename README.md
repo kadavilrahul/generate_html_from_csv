@@ -46,6 +46,7 @@ bash subdomain.sh
 
 4. Move to the folder where you want to generate HTML files
 Example: The domain folder where SSL is installed like /var/www/your_domain.com
+
 Optionally open the folder in VS code to easily modify files and use terminal
 
 ```bash
@@ -63,7 +64,8 @@ git clone https://github.com/kadavilrahul/generate_html_from_csv .
 706, 707, 769, 519, 520, 548, 549, 550, 551
 ```
 or
-Create a blank file replace.sh and paste th content provided to it and then replace.sh
+Create a blank file replace.sh and paste th content provided to it and then replace.sh.
+
 Note: Do not copy paste the file itself using SFTP
 ```bash 
 bash replace.sh
