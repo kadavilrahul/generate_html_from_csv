@@ -19,13 +19,146 @@ function esc_url($url) {
 function esc_html($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Added new CSS for tile layout */
+        .search-results-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .product-item {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .product-image img:hover {
+            transform: scale(1.05);
+        }
+
+        .no-image {
+            width: 100%;
+            height: 100%;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .product-details {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .product-details h4 {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.3;
+            height: 36px;
+            overflow: hidden;
+        }
+
+        .product-details h4 a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #e44d26;
+            margin: 5px 0;
+        }
+
+        .category {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .view-details {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+
+        .view-details:hover {
+            background: #45a049;
+        }
+
+        .no-results, .error-message {
+            text-align: center;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c00;
+        }
+
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .product-image {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+<?php
 // Database configuration
 $db_config = array(
-    'host'     => 'localhost',
-    'port'     => '5432',
+    'host'    => 'localhost',
+    'port'    => '5432',
     'dbname'   => 'products_db',
-    'user'     => 'products_user',
+    'user'    => 'products_user',
     'password' => 'products_2@'
 );
 
@@ -86,26 +219,22 @@ try {
                                     <div class="no-image">No Image Available</div>
                                 <?php endif; ?>
                             </div>
-
                             <div class="product-details">
                                 <h4>
                                     <a href="<?php echo esc_url($product['product_link']); ?>" target="_blank">
                                         <?php echo esc_html($product['title']); ?>
                                     </a>
                                 </h4>
-
                                 <?php if (isset($product['price'])): ?>
                                     <div class="price">
                                         Rs. <?php echo esc_html($product['price']); ?>
                                     </div>
                                 <?php endif; ?>
-
                                 <?php if (isset($product['category'])): ?>
                                     <div class="category">
-                                        Category: <?php echo esc_html($product['category']); ?>
+                                        <?php echo esc_html($product['category']); ?>
                                     </div>
                                 <?php endif; ?>
-
                                 <a href="<?php echo esc_url($product['product_link']); ?>" 
                                    class="view-details" 
                                    target="_blank">
@@ -143,3 +272,5 @@ try {
     <?php
 }
 ?>
+</body>
+</html>
