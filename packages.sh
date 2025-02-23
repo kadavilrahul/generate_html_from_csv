@@ -15,7 +15,6 @@ sudo apt install -y \
     python3-pip \
     postgresql \
     postgresql-contrib \
-    xmlstarlet \
     libpq-dev \
     php-pgsql
 
