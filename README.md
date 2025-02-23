@@ -14,6 +14,9 @@ This repository contains a setup script to automate the installation of developm
 
 ## Installation
 
+Setup ssh keys if you want to login from another machine securely without password (optional)
+https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-to-another-server.txt
+
 1. Install Apache and Posstgres on new server if already installed
 
 ```bash
