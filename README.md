@@ -17,12 +17,18 @@ This repository contains a setup script to automate the installation of developm
 Setup ssh keys if you want to login from another machine securely without password (optional)
 https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-to-another-server.txt
 
-1. Install Apache and Posstgres on new server if already installed
+1. Clone this repository files
+
+```bash
+git clone https://github.com/kadavilrahul/generate_html_from_csv .
+```
+
+2. Install Apache and Posstgres on new server if already installed
 
 ```bash
 bash apache_postgres.sh
 ```
-2. Install SSL on the sever for your domain or subdomain
+3. Install SSL on the sever for your domain or subdomain
 
 ```bash
 bash maindomain.sh
@@ -33,17 +39,13 @@ or
 bash subdomain.sh
 ```
 
-3. Move to the folder where you want to generate HTML files
+4. Move to the folder where you want to generate HTML files
 Example: The domain folder where SSL is installed like /var/www/your_domain.com
 
 ```bash
 cd <project-folder>
 ```
-4. Clone this repository files
 
-```bash
-git clone https://github.com/kadavilrahul/generate_html_from_csv .
-```
 5. Modify following lines in setup.sh
 ```bash 
 706, 707, 769, 519, 520, 548, 549, 550, 551
