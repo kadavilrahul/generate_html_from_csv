@@ -31,6 +31,7 @@ bash subdomain.sh
 ```
 
 3. Move to the folder where you want to generate HTML files
+Example: The domain folder where SSL is installed like /var/www/your_domain.com
 
 ```bash
 cd <project-folder>
