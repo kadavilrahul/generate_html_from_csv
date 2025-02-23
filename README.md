@@ -51,7 +51,7 @@ Example: The domain folder where SSL is installed like /var/www/your_domain.com
 cd <project-folder>
 ```
 
-5. Clone this repository files
+5. Clone this repository files again to the new location
 
 ```bash
 git clone https://github.com/kadavilrahul/generate_html_from_csv .
