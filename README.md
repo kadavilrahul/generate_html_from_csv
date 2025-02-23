@@ -81,7 +81,7 @@ bash packages.sh
 ```bash
 bash setup.sh
 ```
-9. Convert products_database.csv to products_database.xml
+9. Convert products_database.xml to products_database.csv so that it can be uploaded to database
 
 ```bash
 bash data/convert.sh
