@@ -73,43 +73,43 @@ bash replace.sh
 ```bash 
 bash packages.sh
 ```
-8. Run setup.sh
+8. Create HTML products
 
 ```bash
 bash setup.sh
 ```
-9. Run convert.sh
+9. Convert products_database.csv to products_database.xml
 
 ```bash
 bash data/convert.sh
 ```
 
-10. Run create_database.sh
+10. Create poastgres database
 
 ```bash
 bash data/create_database.sh
 ```
 
-11. Run create_database.sh
+11. Import CSV products to postgres database
 
 ```bash
 bash data/import_csv.sh
 ```
 
-12. Run create_database.sh
+12. Check if data was imported sucessfully. Only firsst five products are see
+    Check also the HTML page if search bar is functional
 
 ```bash
 bash data/check_data.sh
 ```
 
-13. Run create_database.sh
+13. Install pgadmin to manage postgres database
 
 ```bash
 bash data/install_pgadmin.sh
 ```
-After installation:
 
-14. Access pgadmin on your web browser
+14. After installation access pgadmin on your web browser
 ```
 Navigate to: http://your_server_ip/pgadmin4
 Log in with your email and password
@@ -122,8 +122,7 @@ Password: products_2@
 This will give you a web-based interface to manage your PostgreSQL database.
 ```
 
-
-15. Check the tables and imported products:
+15. Check the database tables and imported products:
 ```
 In pgAdmin4 interface:
 
