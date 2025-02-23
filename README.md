@@ -12,7 +12,8 @@ This repository contains a setup script to automate the installation of developm
 
 ### Tested on: Ubuntu 24.04 Apache
 
-Setup ssh keys if you want to login from another machine securely without password (optional)
+### Setup ssh keys (optional)
+Needed ony if you want to login from another machine securely without password 
 https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-to-another-server.txt
 
 ## Installation
