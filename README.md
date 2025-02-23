@@ -63,7 +63,8 @@ git clone https://github.com/kadavilrahul/generate_html_from_csv .
 706, 707, 769, 519, 520, 548, 549, 550, 551
 ```
 or
-Run replace.sh
+Create a blank file replace.sh and paste th content provided to it and then replace.sh
+Note: Do not copy paste the file itself using SFTP
 ```bash 
 bash replace.sh
 ```
