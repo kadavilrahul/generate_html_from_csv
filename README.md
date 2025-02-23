@@ -31,7 +31,8 @@ cd generate_html_from_csv
 ```bash
 bash apache_postgres.sh
 ```
-3. Install SSL on the sever for your domain or subdomain
+3. Install SSL on the sever for your domain or subdomain if not already installed.
+   Make sure to point th DNS correctly
 
 ```bash
 bash maindomain.sh
