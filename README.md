@@ -38,7 +38,7 @@ bash apache_postgres.sh
 ```bash
 bash maindomain.sh
 ```
-   or
+      or
 
 ```bash
 bash subdomain.sh
@@ -63,10 +63,9 @@ git clone https://github.com/kadavilrahul/generate_html_from_csv .
 ```bash 
 706, 707, 769, 519, 520, 548, 549, 550, 551
 ```
-or
-Create a blank file replace.sh and paste th content provided to it and then replace.sh.
-
+Else create a blank file named replace.sh and paste the content provided to you to the file and then run replace.sh.
 Note: Do not copy paste the file itself using SFTP
+
 ```bash 
 bash replace.sh
 ```
