@@ -38,7 +38,7 @@ bash apache_postgres.sh
 ```bash
 bash maindomain.sh
 ```
-or
+   or
 
 ```bash
 bash subdomain.sh
