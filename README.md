@@ -27,13 +27,13 @@ git clone https://github.com/kadavilrahul/generate_html_from_csv
 cd generate_html_from_csv
 ```
 
-2. Install Apache and Posstgres on new server if already installed
+2. Install Apache and Postgres on new server if not already installed
 
 ```bash
 bash apache_postgres.sh
 ```
 3. Install SSL on the sever for your domain or subdomain if not already installed.
-   Make sure to point th DNS correctly
+   Make sure to point the DNS correctly
 
 ```bash
 bash maindomain.sh
