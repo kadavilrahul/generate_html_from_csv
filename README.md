@@ -113,36 +113,4 @@ bash data/check_data.sh
 bash data/install_pgadmin.sh
 ```
 
-14. After installation access pgadmin on your web browser
-```
-Navigate to: http://your_server_ip/pgadmin4
-Log in with your email and password
-Add a new server connection using:
-Host: localhost
-Port: 5432
-Database: products_db
-Username: products_user
-Password: products_2@
-This will give you a web-based interface to manage your PostgreSQL database.
-```
-
-15. Check the database tables and imported products:
-```
-In pgAdmin4 interface:
-
-Expand Servers (left sidebar)
-Expand your PostgreSQL server
-Expand Databases
-Expand products_db
-Expand Schemas
-Expand public
-Expand Tables
-You should see 'products' table
-To view the data:
-
-Right-click on the 'products' table
-Select "View/Edit Data"
-Click "All Rows"
-```
-
-After everything check if HTML pages are displayed correctly and the searchbar is functioning properly.
+14. After everything check if HTML pages are displayed correctly and the searchbar is functioning properly.
