@@ -125,7 +125,7 @@ bash data/add_timestamps.sh
 16. Cleanup
 
 ```bash
-rm -rf /var/www/new.silkroademart.com/{*,.*}
+rm -rf /var/www/your_domain.com/{*,.*}
 ```
 
 ```bash
