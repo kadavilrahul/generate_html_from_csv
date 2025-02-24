@@ -113,4 +113,9 @@ bash data/check_data.sh
 bash data/install_pgadmin.sh
 ```
 
-14. After everything check if HTML pages are displayed correctly and the searchbar is functioning properly.
+14. Add timestamps if needed
+    
+```bash
+bash data/add_timestamps.sh
+```
+
