@@ -106,7 +106,8 @@ bash data/import_csv.sh
 bash data/check_data.sh
 ```
 
-13. Install pgadmin to manage postgres database
+13. Optionally install pgadmin to manage postgres database
+    Else connect using remote database tool like dbeaver
 
 ```bash
 bash data/install_pgadmin.sh
