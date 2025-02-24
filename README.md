@@ -8,12 +8,12 @@ This repository contains a setup script to automate the installation of developm
 - Sudo privileges
 - Internet connection
 - Apache/Nginx server
-- php
+- Php
 
 ### Tested on: Ubuntu 24.04 Apache
 
 ### Setup ssh keys (optional)
-Needed ony if you want to login from another machine securely without password 
+Needed only if you want to login from another machine securely without password.
 https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-to-another-server.txt
 
 ## Installation
@@ -85,36 +85,49 @@ bash setup.sh
 ```bash
 bash data/convert.sh
 ```
+10. Transfer data and public folders to new server. Update DEST_SERVER and BASE_PATH in the script before running.
 
-10. Create poastgres database
+```bash
+bash data/transfer.sh
+```
+11. Create poastgres database
 
 ```bash
 bash data/create_database.sh
 ```
 
-11. Import CSV products to postgres database
+12. Import CSV products to postgres database
 
 ```bash
 bash data/import_csv.sh
 ```
 
-12. Check if data was imported sucessfully. Only firsst five products are see
+13. Check if data was imported sucessfully. Only firsst five products are see
     Check also the HTML page if search bar is functional
 
 ```bash
 bash data/check_data.sh
 ```
 
-13. Optionally install pgadmin to manage postgres database
+14. Optionally install pgadmin to manage postgres database
     Else connect using remote database tool like dbeaver
 
 ```bash
 bash data/install_pgadmin.sh
 ```
 
-14. Add timestamps if needed
+15. Add timestamps if needed
     
 ```bash
 bash data/add_timestamps.sh
 ```
 
+16. Cleanup
+
+```bash
+rm -rf /var/www/new.silkroademart.com/{*,.*}
+```
+
+```bash
+rm -rf /root/generate_html_from_csv
+```
