@@ -20,9 +20,11 @@ https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-to-another-serve
 
 1. Move to the folder where you want to generate HTML files.
 
-Example: The domain folder where SSL is installed like /var/www/your_domain.com
+    Example: The domain folder where SSL is installed, 
+    
+    `/var/www/your_domain.com`
 
-Optionally open the folder in VS code to easily modify files and use terminal.
+    Optionally open the folder in VS code to easily modify files and use terminal.
 
 2. Clone this repository files again to the new location. Delete any unwanted files in th location.
 
