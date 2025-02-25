@@ -43,8 +43,8 @@ Run:
 ```bash 
 nano replace.sh
 ```
-Copy using CTRl+C and paste using right click
-Then Run:
+- Copy contents using CTRl+C and paste using right click to paste contents
+- Then Run:
 ```bash 
 bash replace.sh
 ```
@@ -55,7 +55,8 @@ bash replace.sh
 bash setup.sh
 ```
 
-5. Transfer data and public folders to new server. Update DEST_SERVER and BASE_PATH in the transfer.sh script before running.
+5. Transfer data and public folders to new server.
+- Update DEST_SERVER and BASE_PATH in the transfer.sh script before running.
 
 ```bash
 bash data/transfer.sh
@@ -104,14 +105,14 @@ bash data/import_csv.sh
 ```
 
 12. Check if data was imported sucessfully. Only firsst five products are see
-    Check also the HTML page if search bar is functional
+- Check also the HTML page if search bar is functional
 
 ```bash
 bash data/check_data.sh
 ```
 
 13. Optionally install pgadmin to manage postgres database
-    Else connect using remote database tool like dbeaver
+- Else connect using remote database tool like dbeaver
 
 ```bash
 bash data/install_pgadmin.sh
