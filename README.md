@@ -54,8 +54,8 @@ bash subdomain.sh
 ```bash 
 706, 707, 769, 519, 520, 548, 549, 550, 551
 ```
-   Else create a blank file named replace.sh and paste the content provided to you into the file and then run replace.sh.
-   Note: Do not copy paste the file itself using SFTP
+- Else create a blank file named replace.sh and paste the content provided to you into the file and then run replace.sh.
+- Note: Do not copy paste the file itself using SFTP
 
 ```bash 
 bash replace.sh
