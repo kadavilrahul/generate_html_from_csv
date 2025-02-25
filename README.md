@@ -62,19 +62,40 @@ bash setup.sh
 bash data/transfer.sh
 ```
 
-6. Install Apache and Postgres on new server if not already installed
-
-```bash
-bash data/apache_postgres.sh
-```
-
-7. On the new server run package installation script
+6. On the new server run package installation script
 
 ```bash 
 bash data/packages.sh
 ```
 
-8. Install SSL on the server for your domain or subdomain if not already installed.
+7. Convert products_database.xml to products_database.csv so that it can be uploaded to database
+
+```bash
+bash data/convert.sh
+```
+
+8. Create poastgres database
+
+```bash
+bash data/create_database.sh
+```
+
+9. Import CSV products to postgres database
+
+```bash
+bash data/import_csv.sh
+```
+
+10. Check if data was imported sucessfully. Only firsst five products are see
+- Check also the HTML page if search bar is functional
+
+```bash
+bash data/check_data.sh
+```
+
+## Optional commands
+
+1. Install SSL on the server for your domain or subdomain if not already installed.
    Make sure to point the DNS correctly
 
 ```bash
@@ -86,45 +107,20 @@ bash maindomain.sh
 bash subdomain.sh
 ```
 
-9. Convert products_database.xml to products_database.csv so that it can be uploaded to database
-
-```bash
-bash data/convert.sh
-```
-
-10. Create poastgres database
-
-```bash
-bash data/create_database.sh
-```
-
-11. Import CSV products to postgres database
-
-```bash
-bash data/import_csv.sh
-```
-
-12. Check if data was imported sucessfully. Only firsst five products are see
-- Check also the HTML page if search bar is functional
-
-```bash
-bash data/check_data.sh
-```
-
-13. Optionally install pgadmin to manage postgres database
+2. Install pgadmin to manage postgres database
 - Else connect using remote database tool like dbeaver
 
 ```bash
 bash data/install_pgadmin.sh
 ```
 
-14. Add timestamps if needed
+3. Add timestamps if needed
     
 ```bash
 bash data/add_timestamps.sh
 ```
 
-15. Cleanup
+4. Cleanup
 
 ```bash
 rm -rf /var/www/your_domain.com/{*,.*}
