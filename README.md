@@ -107,8 +107,7 @@ bash maindomain.sh
 bash subdomain.sh
 ```
 
-2. Install pgadmin to manage postgres database
-- Else connect using remote database tool like dbeaver
+2. Install pgadmin to manage postgres database. Else connect using remote database tool like dbeaver.
 
 ```bash
 bash data/install_pgadmin.sh
