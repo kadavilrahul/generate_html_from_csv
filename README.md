@@ -65,13 +65,13 @@ bash data/transfer.sh
 6. Install Apache and Postgres on new server if not already installed
 
 ```bash
-bash apache_postgres.sh
+bash data/apache_postgres.sh
 ```
 
 7. On the new server run package installation script
 
 ```bash 
-bash packages.sh
+bash data/packages.sh
 ```
 
 8. Install SSL on the server for your domain or subdomain if not already installed.
