@@ -86,7 +86,7 @@ bash data/create_database.sh
 bash data/import_csv.sh
 ```
 
-10. Check if data was imported sucessfully. Only firsst five products are see
+10. Check if data was imported sucessfully. Only firsst five products will be visible.
 - Check also the HTML page if search bar is functional
 
 ```bash
