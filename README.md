@@ -26,7 +26,7 @@ https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-to-another-serve
 
     Optionally open the folder in VS code to easily modify files and use terminal.
 
-2. Clone this repository files again to the new location. Delete any unwanted files in th location.
+2. Clone this repository files again to the current location. (Delete any       unwanted files in the location first if it exists)
 
 ```bash
 git clone https://github.com/kadavilrahul/generate_html_from_csv .
