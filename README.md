@@ -18,21 +18,23 @@ https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-to-another-serve
 
 ## Installation
 
-1. Clone this repository
+1. Move to the folder where you want to generate HTML files
+Example: The domain folder where SSL is installed like /var/www/your_domain.com
+Optionally open the folder in VS code to easily modify files and use terminal.
+
+2. Clone this repository files again to the new location. Delete any unwanted files in th location.
 
 ```bash
-git clone https://github.com/kadavilrahul/generate_html_from_csv
-```
-```bash
-cd generate_html_from_csv
+git clone https://github.com/kadavilrahul/generate_html_from_csv .
 ```
 
-2. Install Apache and Postgres on new server if not already installed
+3. Install Apache and Postgres on new server if not already installed
 
 ```bash
 bash apache_postgres.sh
 ```
-3. Install SSL on the sever for your domain or subdomain if not already installed.
+
+4. Install SSL on the server for your domain or subdomain if not already installed.
    Make sure to point the DNS correctly
 
 ```bash
@@ -44,22 +46,7 @@ bash maindomain.sh
 bash subdomain.sh
 ```
 
-4. Move to the folder where you want to generate HTML files
-Example: The domain folder where SSL is installed like /var/www/your_domain.com
-
-Optionally open the folder in VS code to easily modify files and use terminal
-
-```bash
-cd <project-folder>
-```
-
-5. Clone this repository files again to the new location. Delete any unwanted files in th location.
-
-```bash
-git clone https://github.com/kadavilrahul/generate_html_from_csv .
-```
-
-6. Modify following lines in setup.sh
+5. Modify following lines in setup.sh
 ```bash 
 706, 707, 769, 519, 520, 548, 549, 550, 551
 ```
@@ -75,21 +62,25 @@ bash replace.sh
 ```bash 
 bash packages.sh
 ```
+
 8. Create HTML products
 
 ```bash
 bash setup.sh
 ```
+
 9. Convert products_database.xml to products_database.csv so that it can be uploaded to database
 
 ```bash
 bash data/convert.sh
 ```
+
 10. Transfer data and public folders to new server. Update DEST_SERVER and BASE_PATH in the script before running.
 
 ```bash
 bash data/transfer.sh
 ```
+
 11. Create poastgres database
 
 ```bash
