@@ -1023,7 +1023,7 @@ if [ -f "products.csv" ]; then
     mv convert.sh data/
     mv check_data.sh data/
     mv add_timestamps.sh data/
-    mv transfer.sh
+    mv transfer.sh data/
     
     echo "Moved files to data directory"
 else
