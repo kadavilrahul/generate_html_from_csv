@@ -94,6 +94,13 @@ bash data/import_csv.sh
 bash data/check_data.sh
 ```
 
+11. Update SSL to server static HTML pages. Open this file and follow instructions.
+Modify the domain name
+
+```bash
+data/SSL_for_static_HTML.txt
+```
+
 ## Optional commands
 
 1. Install SSL on the server for your domain or subdomain if not already installed.
