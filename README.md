@@ -62,7 +62,14 @@ bash setup.sh
 bash data/transfer.sh
 ```
 
-6. On the new server run package installation script
+6. Update SSL to serve static HTML pages. Open this file and follow instructions.
+Modify the domain name
+
+```bash
+data/SSL_for_static_HTML.txt
+```
+
+7. On the new server run package installation script
 
 ```bash 
 bash data/packages.sh
@@ -94,12 +101,7 @@ bash data/import_csv.sh
 bash data/check_data.sh
 ```
 
-11. Update SSL to server static HTML pages. Open this file and follow instructions.
-Modify the domain name
 
-```bash
-data/SSL_for_static_HTML.txt
-```
 
 12. Run HTML pages count script and check if data is updated on data/public_files_count.log
 
