@@ -101,7 +101,11 @@ Modify the domain name
 data/SSL_for_static_HTML.txt
 ```
 
-12. Update database credentials in search.php
+12. Run HTML pages count script and check if data is updated on data/public_files_count.log
+
+```bash
+bash data/count_public_files.sh
+```
 
 ## Optional commands
 
