@@ -57,6 +57,7 @@ bash setup.sh
 
 5. Transfer data and public folders to new server.
 - Update DEST_SERVER and BASE_PATH in the transfer.sh script before running.
+- Check if root is enabled on destination server
 
 ```bash
 bash data/transfer.sh
