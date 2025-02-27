@@ -101,6 +101,8 @@ Modify the domain name
 data/SSL_for_static_HTML.txt
 ```
 
+12. Update database credentials in search.php
+
 ## Optional commands
 
 1. Install SSL on the server for your domain or subdomain if not already installed.
