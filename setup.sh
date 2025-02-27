@@ -1024,6 +1024,7 @@ if [ -f "products.csv" ]; then
     mv check_data.sh data/
     mv add_timestamps.sh data/
     mv transfer.sh data/
+    mv SSL_for_static_HTML.txt data/
     
     echo "Moved files to data directory"
 else
