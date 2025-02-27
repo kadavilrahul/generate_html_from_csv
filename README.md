@@ -14,7 +14,7 @@ This repository contains a setup script to automate the installation of developm
 
 ### Setup ssh keys (optional)
 Needed only if you want to login from another machine securely without password.
-https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-to-another-server.txt
+https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-root-to-root-another-server.sh
 
 ## Installation
 
