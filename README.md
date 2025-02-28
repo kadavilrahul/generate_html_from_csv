@@ -68,6 +68,8 @@ Modify the domain name
 
 ```bash
 data/SSL_for_static_HTML.txt
+
+bash data/update_apache_config.sh
 ```
 
 7. On the new server run package installation script
@@ -101,8 +103,6 @@ bash data/import_csv.sh
 ```bash
 bash data/check_data.sh
 ```
-
-
 
 12. Run HTML pages count script and check if data is updated on data/public_files_count.log
 
