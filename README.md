@@ -74,6 +74,9 @@ Run this
 ```bash
 bash data/update_apache_config.sh your_domainname.com
 ```
+```bash
+sudo systemctl restart apache2
+```
 
 7. On the new server run package installation script
 
