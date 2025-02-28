@@ -1,10 +1,14 @@
 #!/bin/bash
 
-# Set the directory to monitor
-PUBLIC_DIR="/var/www/new.silkroademart.com/public"
+# Automatically detect the website directory from the current path
+CURRENT_DIR=$(pwd)
+WEBSITE_DIR=$(echo "$CURRENT_DIR" | grep -o "/var/www/[^/]*")
+
+# Set the directory to monitor using the detected website directory
+PUBLIC_DIR="$WEBSITE_DIR/public"
 
 # Set the log file
-LOG_FILE="/var/www/new.silkroademart.com/data/public_files_count.log"
+LOG_FILE="$WEBSITE_DIR/data/public_files_count.log"
 
 # Get the current timestamp
 TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
@@ -25,8 +29,10 @@ for folder in $(find "$PUBLIC_DIR" -maxdepth 1 -type d); do
   fi
 done
 
-# Remove the leading comma and space from the file counts string
-FILE_COUNTS=${FILE_COUNTS:2}
+# Remove the leading comma and space from the file counts string if it exists
+if [[ -n "$FILE_COUNTS" ]]; then
+  FILE_COUNTS=${FILE_COUNTS:2}
+fi
 
 # Create the log entry
 LOG_ENTRY="$TIMESTAMP - Folders: $FOLDER_COUNT, Files in folders: $FILE_COUNTS"
@@ -34,4 +40,5 @@ LOG_ENTRY="$TIMESTAMP - Folders: $FOLDER_COUNT, Files in folders: $FILE_COUNTS"
 # Append the log entry to the log file
 echo "$LOG_ENTRY" >> "$LOG_FILE"
 
+echo "Detected website directory: $WEBSITE_DIR"
 echo "Logged file and folder count to $LOG_FILE"
