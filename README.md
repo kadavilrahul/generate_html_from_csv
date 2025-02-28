@@ -69,7 +69,7 @@ Modify the domain name
 ```bash
 data/SSL_for_static_HTML.txt
 
-bash data/update_apache_config.sh
+bash data/update_apache_config.sh your_domainname.com
 ```
 
 7. On the new server run package installation script
