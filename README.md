@@ -113,6 +113,7 @@ To delete all products in the database
 ```bash
 psql -h localhost -p 5432 -U products_user -d products_db -c "DELETE FROM products;"
 ```
+Use database password
 
 12. Run HTML pages count script and check if data is updated on data/public_files_count.log
 
