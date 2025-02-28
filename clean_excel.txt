@@ -1,0 +1,199 @@
+' This script cleans the excel file with following.
+' 1. Delete whole rows that have blank cells in columnn "B"
+' 2. Remove Inverted commas from cells in columnn "B"
+' 3. Remove space from the beginning of cells in Coumn B
+' 4. Remove symbols from cells in colum B but Keep Text and numbers
+' 5. Remove more than one space if any between texts
+
+
+
+Option Explicit
+
+Sub CleanCSVFileInBatches()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim titleCol As Integer
+    Dim batchSize As Long
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim i As Long
+    Dim processedRows As Long
+    Dim cellValue As Variant
+    
+    ' Set the active sheet
+    Set ws = ActiveSheet
+    
+    ' Define the batch size
+    batchSize = 100
+    
+    ' Find the Title column
+    titleCol = FindColumnByName(ws, "Title")
+    If titleCol = 0 Then
+        MsgBox "Column 'Title' not found in the worksheet.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Find the last row with data
+    lastRow = ws.Cells(ws.Rows.Count, titleCol).End(xlUp).Row
+    
+    ' Initialize counter
+    processedRows = 0
+    
+    ' Turn off screen updating and calculation to improve performance
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    Application.EnableEvents = False
+    
+    ' Process in batches
+    startRow = 2 ' Start from the second row (assuming the first row is the header)
+    
+    On Error GoTo ErrorHandler
+    
+    Do While startRow <= lastRow
+        ' Define the end row for the current batch
+        endRow = startRow + batchSize - 1
+        If endRow > lastRow Then endRow = lastRow
+        
+        ' Process the current batch
+        For i = endRow To startRow Step -1
+            ' Get cell value
+            cellValue = ws.Cells(i, titleCol).Value
+            
+            ' Check if cell is empty
+            If IsCellEmpty(cellValue) Then
+                ws.Rows(i).Delete
+            Else
+                ' Clean the cell if it's not empty
+                If Not IsError(cellValue) Then
+                    ' Convert to string and clean
+                    ws.Cells(i, titleCol).Value = CleanText(CStr(cellValue))
+                End If
+            End If
+            
+            ' Increment counter
+            processedRows = processedRows + 1
+            
+            ' Update status every 1000 rows
+            If processedRows Mod 1000 = 0 Then
+                Application.StatusBar = "Processed " & processedRows & " of " & (lastRow - 1) & " rows..."
+                DoEvents ' Allow Excel to process other events
+            End If
+        Next i
+        
+        ' Move to the next batch
+        startRow = endRow + 1
+    Loop
+    
+CleanupAndExit:
+    ' Restore Excel settings
+    Application.StatusBar = False
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Application.EnableEvents = True
+    
+    MsgBox "Data cleaning complete! Processed " & processedRows & " rows.", vbInformation
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Error " & Err.Number & ": " & Err.Description & " at row " & i, vbExclamation
+    Resume CleanupAndExit
+End Sub
+
+Function IsCellEmpty(cellValue As Variant) As Boolean
+    ' Handle all possible empty cell scenarios
+    On Error Resume Next
+    
+    IsCellEmpty = False
+    
+    If IsEmpty(cellValue) Then
+        IsCellEmpty = True
+    ElseIf IsNull(cellValue) Then
+        IsCellEmpty = True
+    ElseIf cellValue = "" Then
+        IsCellEmpty = True
+    ElseIf Len(Trim(CStr(cellValue))) = 0 Then
+        IsCellEmpty = True
+    End If
+    
+    On Error GoTo 0
+End Function
+
+Function CleanText(ByVal inputText As String) As String
+    On Error Resume Next
+    
+    Dim outputText As String
+    outputText = inputText
+    
+    ' 2. Remove inverted commas
+    outputText = Replace(Replace(outputText, """", ""), "'", "")
+    
+    ' 3. Remove space from the beginning
+    outputText = LTrim(outputText)
+    
+    ' 4. Remove symbols but keep text and numbers
+    outputText = RemoveSymbolsFromText(outputText)
+    
+    ' 5. Remove more than one space between texts
+    outputText = RemoveExtraSpacesFromText(outputText)
+    
+    CleanText = outputText
+    
+    On Error GoTo 0
+End Function
+
+Function RemoveSymbolsFromText(ByVal inputText As String) As String
+    On Error Resume Next
+    
+    Dim i As Long
+    Dim result As String
+    Dim char As String
+    
+    result = ""
+    
+    For i = 1 To Len(inputText)
+        char = Mid(inputText, i, 1)
+        ' Keep letters, numbers, and spaces
+        If (char >= "a" And char <= "z") Or _
+           (char >= "A" And char <= "Z") Or _
+           (char >= "0" And char <= "9") Or _
+           char = " " Or char = "_" Then
+            result = result & char
+        End If
+    Next i
+    
+    RemoveSymbolsFromText = result
+    
+    On Error GoTo 0
+End Function
+
+Function RemoveExtraSpacesFromText(ByVal inputText As String) As String
+    On Error Resume Next
+    
+    Dim result As String
+    result = inputText
+    
+    ' Replace multiple spaces with a single space
+    Do While InStr(result, "  ") > 0
+        result = Replace(result, "  ", " ")
+    Loop
+    
+    RemoveExtraSpacesFromText = result
+    
+    On Error GoTo 0
+End Function
+
+Function FindColumnByName(ws As Worksheet, colName As String) As Integer
+    Dim i As Integer
+    Dim lastCol As Integer
+    
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    For i = 1 To lastCol
+        If ws.Cells(1, i).Value = colName Then
+            FindColumnByName = i
+            Exit Function
+        End If
+    Next i
+    
+    FindColumnByName = 0  ' Column not found
+End Function
