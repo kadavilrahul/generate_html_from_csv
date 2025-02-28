@@ -104,7 +104,7 @@ bash data/convert.sh
 bash data/create_database.sh
 ```
 
-11. Fix the CSV file for long cahracters, symbols and other errors
+11. Optionally fix the CSV file for long cahracters, symbols and other errors
 
 ```bash
 bash data/fix_csv.sh
