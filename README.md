@@ -18,7 +18,14 @@ https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-root-to-root-ano
 
 ## Installation
 
-1. Move to the folder in terminal where you want to generate HTML files.
+1. Open excel file containing products data
+   
+   Run VBA code in file "clean_excel.txt"
+   Make sure headers are correct like this
+   Image	Title	Regular Price	Category	Short_description	description
+   Save file as CSV
+
+2. Move to the folder in terminal where you want to generate HTML files.
 
     Example: The domain folder where SSL is installed, 
     
@@ -27,13 +34,13 @@ https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-root-to-root-ano
     Create new folder if not already present.
     Open the folder in VS code to easily modify files and use terminal (Optional)
 
-2. Clone this repository files again to the current location. (Delete any unwanted files in the location first if it exists)
+3. Clone this repository files again to the current location. (Delete any unwanted files in the location first if it exists)
 
 ```bash
 git clone https://github.com/kadavilrahul/generate_html_from_csv .
 ```
 
-3. Modify following lines in setup.sh
+4. Modify following lines in setup.sh
 ```bash 
 706, 707, 769, 519, 520, 548, 549, 550, 551
 ```
@@ -49,13 +56,13 @@ nano replace.sh
 bash replace.sh
 ```
 
-4. Create HTML products
+5. Create HTML products
 
 ```bash
 bash setup.sh
 ```
 
-5. Transfer data and public folders to new server.
+6. Transfer data and public folders to new server.
 - Update DEST_SERVER and BASE_PATH in the transfer.sh script before running.
 - Check if root is enabled on destination server
 
@@ -63,7 +70,7 @@ bash setup.sh
 bash data/transfer.sh
 ```
 
-6. Update SSL to serve static HTML pages. Open this file and follow instructions.
+7. Update SSL to serve static HTML pages. Open this file and follow instructions.
 Modify the domain name
 Readd this
 ```bash
@@ -78,37 +85,37 @@ bash data/update_apache_config.sh your_domainname.com
 sudo systemctl restart apache2
 ```
 
-7. On the new server run package installation script
+8. On the new server run package installation script
 
 ```bash 
 bash data/packages.sh
 ```
 
-7. Convert products_database.xml to products_database.csv so that it can be uploaded to database
+9. Convert products_database.xml to products_database.csv so that it can be uploaded to database
 
 ```bash
 bash data/convert.sh
 ```
 
-8. Create poastgres database
+10. Create poastgres database
 
 ```bash
 bash data/create_database.sh
 ```
 
-9. Fix the CSV file for long cahracters, symbols and other errors
+11. Fix the CSV file for long cahracters, symbols and other errors
 
 ```bash
 bash data/fix_csv.sh
 ```
 
-10. Import CSV products to postgres database
+12. Import CSV products to postgres database
 
 ```bash
 bash data/import_csv.sh
 ```
 
-11. Check if data was imported sucessfully. Only first five products will be visible.
+13. Check if data was imported sucessfully. Only first five products will be visible.
 - Update the database credentials in search.php especially MySQL database
 - Check also the HTML page if search bar is functional
 
@@ -119,9 +126,9 @@ To delete all products in the database
 ```bash
 psql -h localhost -p 5432 -U products_user -d products_db -c "DELETE FROM products;"
 ```
-Use database password
+Use database password when asked
 
-13. Run HTML pages count script and check if data is updated on data/public_files_count.log
+14. Run HTML pages count script and check if data is updated on data/public_files_count.log
 
 ```bash
 bash data/count_public_files.sh
