@@ -19,12 +19,13 @@ https://github.com/kadavilrahul/generate_ssh_keys/blob/main/ssh-root-to-root-ano
 ## Installation
 
 1. Open excel file containing products data
-   
+   ```
    Run VBA code in file "clean_excel.txt"
    Make sure headers are correct like this
    Image	Title	Regular Price	Category	Short_description	description
    Save file as CSV
-
+   ```
+   
 2. Move to the folder in terminal where you want to generate HTML files.
 
     Example: The domain folder where SSL is installed, 
