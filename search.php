@@ -255,7 +255,7 @@ try {
             $pg_query = "SELECT title, price, product_link, category, image_url 
                         FROM products 
                         WHERE title ILIKE $1 
-                        LIMIT 6"; // Reduced limit to leave room for WordPress results
+                        LIMIT 20"; // Reduced limit to leave room for WordPress results
 
             // Add wildcards to search term
             $search_pattern = "%{$search_term}%";
@@ -334,7 +334,7 @@ try {
                     p.post_type IN ('post', 'page', 'product') 
                     AND p.post_status = 'publish'
                     AND p.post_title LIKE ?
-                LIMIT 6";
+                LIMIT 20";
             
             // Prepare and execute the query
             $stmt = mysqli_prepare($wp_conn, $wp_query);
