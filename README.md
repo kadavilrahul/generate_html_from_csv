@@ -65,10 +65,13 @@ bash data/transfer.sh
 
 6. Update SSL to serve static HTML pages. Open this file and follow instructions.
 Modify the domain name
-
+Readd this
 ```bash
 data/SSL_for_static_HTML.txt
-
+```
+or
+Run this
+```bash
 bash data/update_apache_config.sh your_domainname.com
 ```
 
