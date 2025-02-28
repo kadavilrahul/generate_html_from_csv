@@ -104,10 +104,18 @@ bash data/convert.sh
 bash data/create_database.sh
 ```
 
-11. Optionally fix the CSV file for long cahracters, symbols and other errors
-
+11. Optionally use these scripts
+ - Fix the CSV file for long cahracters, symbols and other errors
 ```bash
 bash data/fix_csv.sh
+```
+ - Cut first 100 prows in CSV file to a new file
+```bash
+bash data/cut_first_100.sh
+```
+ - Import first 100 products to database
+```bash
+bash data/import_first_100.sh
 ```
 
 12. Import CSV products to postgres database
