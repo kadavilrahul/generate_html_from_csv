@@ -1026,6 +1026,7 @@ if [ -f "products.csv" ]; then
     mv transfer.sh data/
     mv SSL_for_static_HTML.txt data/
     mv count_public_files.sh data/
+    mv update_apache_config.sh data/
     
     echo "Moved files to data directory"
 else
