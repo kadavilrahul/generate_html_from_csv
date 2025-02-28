@@ -96,13 +96,19 @@ bash data/convert.sh
 bash data/create_database.sh
 ```
 
-9. Import CSV products to postgres database
+9. Fix the CSV file for long cahracters, symbols and other errors
+
+```bash
+bash data/fix_csv.sh
+```
+
+10. Import CSV products to postgres database
 
 ```bash
 bash data/import_csv.sh
 ```
 
-10. Check if data was imported sucessfully. Only first five products will be visible.
+11. Check if data was imported sucessfully. Only first five products will be visible.
 - Update the database credentials in search.php especially MySQL database
 - Check also the HTML page if search bar is functional
 
@@ -115,7 +121,7 @@ psql -h localhost -p 5432 -U products_user -d products_db -c "DELETE FROM produc
 ```
 Use database password
 
-12. Run HTML pages count script and check if data is updated on data/public_files_count.log
+13. Run HTML pages count script and check if data is updated on data/public_files_count.log
 
 ```bash
 bash data/count_public_files.sh
