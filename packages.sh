@@ -33,6 +33,7 @@ sudo apt-get install -y \
     php-xmlrpc \
     php-soap \
     php-intl \
+    xmlstarlet \
     php-zip
 
 # Enable Apache modules and PHP-FPM
