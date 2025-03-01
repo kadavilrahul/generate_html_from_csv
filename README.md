@@ -129,6 +129,12 @@ Use database password when asked
 bash data/count_public_files.sh
 ```
 
+14. Divide sitemap.xm file into files with 10000 products each
+
+```bash
+bash data/split_sitemap.sh
+```
+
 ## Optional commands
 
 1. Use test scripts
