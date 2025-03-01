@@ -104,7 +104,34 @@ bash data/convert.sh
 bash data/create_database.sh
 ```
 
-11. Optionally use these scripts
+11. Import CSV products to postgres database
+
+```bash
+bash data/import_csv.sh
+```
+
+12. Check if data was imported sucessfully. Only first five products will be visible.
+- Update the database credentials in search.php especially MySQL database
+- Check also the HTML page if search bar is functional
+
+```bash
+bash data/check_data.sh
+```
+To delete all products in the database
+```bash
+psql -h localhost -p 5432 -U products_user -d products_db -c "DELETE FROM products;"
+```
+Use database password when asked
+
+13. Run HTML pages count script and check if data is updated on data/public_files_count.log
+
+```bash
+bash data/count_public_files.sh
+```
+
+## Optional commands
+
+1. Use test scripts
  - Fix the CSV file for long cahracters, symbols and other errors
 ```bash
 bash data/fix_csv.sh
@@ -118,34 +145,7 @@ bash data/cut_first_100.sh
 bash data/import_first_100.sh
 ```
 
-12. Import CSV products to postgres database
-
-```bash
-bash data/import_csv.sh
-```
-
-13. Check if data was imported sucessfully. Only first five products will be visible.
-- Update the database credentials in search.php especially MySQL database
-- Check also the HTML page if search bar is functional
-
-```bash
-bash data/check_data.sh
-```
-To delete all products in the database
-```bash
-psql -h localhost -p 5432 -U products_user -d products_db -c "DELETE FROM products;"
-```
-Use database password when asked
-
-14. Run HTML pages count script and check if data is updated on data/public_files_count.log
-
-```bash
-bash data/count_public_files.sh
-```
-
-## Optional commands
-
-1. Install SSL on the server for your domain or subdomain if not already installed.
+2. Install SSL on the server for your domain or subdomain if not already installed.
    Make sure to point the DNS correctly
 
 ```bash
@@ -157,19 +157,19 @@ bash maindomain.sh
 bash subdomain.sh
 ```
 
-2. Install pgadmin to manage postgres database. Else connect using remote database tool like dbeaver.
+3. Install pgadmin to manage postgres database. Else connect using remote database tool like dbeaver.
 
 ```bash
 bash data/install_pgadmin.sh
 ```
 
-3. Add timestamps if needed
+4. Add timestamps if needed
     
 ```bash
 bash data/add_timestamps.sh
 ```
 
-4. Cleanup
+5. Cleanup
 
 ```bash
 rm -rf /var/www/your_domain.com/{*,.*}
