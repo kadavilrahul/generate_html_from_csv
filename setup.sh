@@ -1030,6 +1030,7 @@ if [ -f "products.csv" ]; then
     mv import_first_100.sh data/
     mv cut_first_100.sh data/
     mv fix_csv.sh data/
+    mv split_sitemap.sh data/
     
     echo "Moved files to data directory"
 else
