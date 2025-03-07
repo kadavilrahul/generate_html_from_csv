@@ -31,7 +31,7 @@ def get_base_url():
 input_file = "data/sitemap.xml"  # Original sitemap
 base_url = get_base_url()  # Automatically get the base URL
 sitemap_dir = "data/sitemap"  # New directory for sitemaps (inside /data)
-urls_per_file = 1000  # 1,000 URLs per file
+urls_per_file = 10000  # 1,0000 URLs per file
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 print(f"Using base URL: {base_url}")
