@@ -5,10 +5,16 @@ ini_set('display_errors', 1);
 
 // Helper functions
 function sanitize_text_field($str) {
+    if ($str === null) {
+        return '';
+    }
     return htmlspecialchars(strip_tags(trim($str)));
 }
 
 function esc_attr($str) {
+    if ($str === null) {
+        return '';
+    }
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
@@ -17,8 +23,14 @@ function esc_url($url) {
 }
 
 function esc_html($str) {
+    if ($str === null) {
+        return '';
+    }
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
+
+// Get and sanitize the search term early
+$search_term = isset($_GET['term']) ? sanitize_text_field($_GET['term']) : '';
 ?>
 <!DOCTYPE html>
 <html>
@@ -157,6 +169,45 @@ function esc_html($str) {
     background-color: #21759b;
     }
 
+    /* Search bar styles */
+    .search-container {
+    margin-bottom: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+    }
+    
+    .search-container input[type="text"] {
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    width: 60%;
+    max-width: 500px;
+    border-radius: 4px 0 0 4px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+    }
+    
+    .search-container input[type="text"]:focus {
+    border-color: #4CAF50;
+    }
+    
+    .search-container button {
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+    }
+    
+    .search-container button:hover {
+    background: #45a049;
+    }
+
     @media (max-width: 768px) {
     .product-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -166,6 +217,10 @@ function esc_html($str) {
     .product-image {
     height: 150px;
     }
+    
+    .search-container input[type="text"] {
+    width: 70%;
+    }
     }
     </style>
 </head>
@@ -173,6 +228,15 @@ function esc_html($str) {
 <div class="debug-info" style="background: #f8f8f8; padding: 10px; margin-bottom: 20px; font-family: monospace; display: none;">
     <h3>Debug Information</h3>
     <div id="debug-content"></div>
+</div>
+
+<!-- Search Bar -->
+<div class="search-container">
+    <form action="<?php echo esc_url($_SERVER['PHP_SELF']); ?>" method="GET">
+        <input type="text" name="term" placeholder="Search for products..." 
+               value="<?php echo esc_attr($search_term); ?>">
+        <button type="submit">Search</button>
+    </form>
 </div>
 
 <?php
@@ -217,8 +281,7 @@ function esc_js($str) {
     );
 }
 
-// Get and sanitize the search term
-$search_term = isset($_GET['term']) ? sanitize_text_field($_GET['term']) : '';
+// We already defined $search_term at the top of the file
 $combined_results = array();
 $total_results = 0;
 $errors = array();
