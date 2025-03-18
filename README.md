@@ -111,7 +111,7 @@ bash data/import_csv.sh
 ```
 
 12. Check if data was imported sucessfully. Only first five products will be visible.
-- Update the database credentials in search.php especially MySQL database
+- Update the database credentials in search.php especially MySQL and postgreSQL databases
 - Check also the HTML page if search bar is functional
 
 ```bash
