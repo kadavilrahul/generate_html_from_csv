@@ -244,17 +244,17 @@ $search_term = isset($_GET['term']) ? sanitize_text_field($_GET['term']) : '';
 $pg_config = array(
     'host'    => 'localhost',
     'port'    => '5432',
-    'dbname'   => 'products_db',  // Update with your Postgres DB name
-    'user'    => 'products_user', // Update with your Postgres DB user
-    'password' => 'products_2@' // Update with your Postgres DB password
+    'dbname'   => 'your_db_name',  // Update with your Postgres DB name
+    'user'    => 'your_user_name', // Update with your Postgres DB user
+    'password' => 'your_password' // Update with your Postgres DB password
 );
 
 // WordPress MySQL Database configuration (new)
 $wp_config = array(
     'host'     => 'localhost',    // Update with your WordPress DB host
-    'dbname'   => 'products_db',    // Update with your WordPress DB name
-    'user'     => 'products_user',      // Update with your WordPress DB user
-    'password' => 'products_2@',  // Update with your WordPress DB password
+    'dbname'   => 'your_db_name',    // Update with your WordPress DB name
+    'user'     => 'your_user_name',      // Update with your WordPress DB user
+    'password' => 'your_password',  // Update with your WordPress DB password
     'prefix'   => 'wp_'           // WordPress table prefix (usually wp_)
 );
 
@@ -467,13 +467,16 @@ try {
                     mysqli_stmt_close($price_stmt);
                 }
                 
-                // Get featured image URL
+                // Get featured image URL and metadata
                 $image_query = "
                     SELECT 
-                        p2.guid as image_url
+                        pm_img.meta_value as image_meta,
+                        pm_url.meta_value as image_url
                     FROM 
                         {$wp_config['prefix']}postmeta pm
                         JOIN {$wp_config['prefix']}posts p2 ON pm.meta_value = p2.ID
+                        LEFT JOIN {$wp_config['prefix']}postmeta pm_img ON p2.ID = pm_img.post_id AND pm_img.meta_key = '_wp_attached_file'
+                        LEFT JOIN {$wp_config['prefix']}postmeta pm_url ON p2.ID = pm_url.post_id AND pm_url.meta_key = '_wp_attachment_metadata'
                     WHERE 
                         pm.post_id = ?
                         AND pm.meta_key = '_thumbnail_id'
@@ -485,7 +488,31 @@ try {
                     mysqli_stmt_execute($image_stmt);
                     $image_result = mysqli_stmt_get_result($image_stmt);
                     if ($image_row = mysqli_fetch_assoc($image_result)) {
-                        $post['image_url'] = $image_row['image_url'];
+                        // Get the WordPress uploads directory structure from the database
+                        $upload_dir_query = "
+                            SELECT option_value 
+                            FROM {$wp_config['prefix']}options 
+                            WHERE option_name = 'upload_path'";
+                        $upload_result = mysqli_query($wp_conn, $upload_dir_query);
+                        $upload_path = mysqli_fetch_assoc($upload_result);
+                        
+                        // Construct the image URL using the site URL and uploads path
+                        $site_url_query = "
+                            SELECT option_value 
+                            FROM {$wp_config['prefix']}options 
+                            WHERE option_name = 'siteurl'";
+                        $site_url_result = mysqli_query($wp_conn, $site_url_query);
+                        $site_url = mysqli_fetch_assoc($site_url_result);
+                        
+                        if (!empty($image_row['image_meta'])) {
+                            // If custom upload path is set
+                            if (!empty($upload_path['option_value'])) {
+                                $post['image_url'] = $site_url['option_value'] . '/' . $upload_path['option_value'] . '/' . $image_row['image_meta'];
+                            } else {
+                                // Default WordPress upload structure
+                                $post['image_url'] = $site_url['option_value'] . '/wp-content/uploads/' . $image_row['image_meta'];
+                            }
+                        }
                     }
                     mysqli_stmt_close($image_stmt);
                 }
