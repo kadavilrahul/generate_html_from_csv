@@ -111,17 +111,13 @@ bash data/import_csv.sh
 ```
 
 12. Check if data was imported sucessfully. Only first five products will be visible.
+- Updatae database credentials in check_data.sh
 - Update the database credentials in search.php especially MySQL and postgreSQL databases
 - Check also the HTML page if search bar is functional
 
 ```bash
 bash data/check_data.sh
 ```
-To delete all products in the database
-```bash
-psql -h localhost -p 5432 -U products_user -d products_db -c "DELETE FROM products;"
-```
-Use database password when asked
 
 13. Run HTML pages count script and check if data is updated on data/public_files_count.log
 
@@ -184,3 +180,9 @@ rm -rf /var/www/your_domain.com/{*,.*}
 ```bash
 rm -rf /root/generate_html_from_csv
 ```
+
+To delete all products in the database
+```bash
+psql -h localhost -p 5432 -U products_user -d products_db -c "DELETE FROM products;"
+```
+Use database password when asked
