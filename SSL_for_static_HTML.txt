@@ -8,8 +8,8 @@ Updated Apache Configuration
 <VirtualHost *:80>
     ServerAdmin your_email@gmail.com
     ServerName your_website.com.com
-    ServerAlias www.your_website.com.com
-    DocumentRoot /var/www/your_website.com.com
+    ServerAlias www.your_website.com
+    DocumentRoot /var/www/your_website.com
 
     <Directory /var/www/your_website.com>
         AllowOverride All
