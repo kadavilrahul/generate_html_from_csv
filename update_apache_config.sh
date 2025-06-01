@@ -3,7 +3,7 @@
 # Check if domain name is provided
 if [ -z "$1" ]; then
     echo "Usage: $0 domain_name"
-    echo "Example: $0 silkroademart.com"
+    echo "Example: $0 example.com"
     exit 1
 fi
 
