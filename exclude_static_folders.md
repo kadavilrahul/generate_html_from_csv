@@ -53,10 +53,14 @@ sudo systemctl reload apache2
 Test the Setup:
 Place a sample HTML file, e.g., test.html, in /var/www/your_website.com/products:
 
+```
 <html>
 <head><title>Test Page</title></head>
 <body><h1>This is a test HTML page</h1></body>
 </html>
+```
 
 Access it via:
+```
 http://your_website.com/products/test.html
+```
