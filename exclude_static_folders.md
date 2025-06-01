@@ -1,5 +1,4 @@
-To modify your Apache configuration to serve static HTML pages stored in /var/www/your_website.com/products while keeping WordPress functional, 
-you need to update the configuration file to exclude requests to the /products folder from being routed through WordPress. Here's the updated configuration:
+### To modify your Apache configuration to serve static HTML pages stored in /var/www/your_website.com/products while keeping WordPress functional
 
 Configure Apache to serve both WordPress and static HTML pages without conflicts:
 Virtual Host for the Main Domain: Add the following in your Apache configuration (/etc/apache2/sites-available/your_website.com.conf):
