@@ -5,6 +5,7 @@ Configure Apache to serve both WordPress and static HTML pages without conflicts
 Virtual Host for the Main Domain: Add the following in your Apache configuration (/etc/apache2/sites-available/your_website.com.conf):
 Updated Apache Configuration
 
+```bash
 <VirtualHost *:80>
     ServerAdmin your_email@gmail.com
     ServerName your_website.com.com
@@ -32,7 +33,7 @@ Updated Apache Configuration
     RewriteCond %{SERVER_NAME} =your_website.com
     RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>
-
+```
 
 
 By defining the /products folder explicitly in the configuration, requests to this folder bypass WordPress completely.
@@ -44,13 +45,14 @@ Directly served by Apache from /var/www/your_website.com/products.
 
 
 Enable the Configuration:
+```bash
 sudo a2ensite your_website.com.conf
 sudo systemctl reload apache2
+```
 
 Test the Setup:
 Place a sample HTML file, e.g., test.html, in /var/www/your_website.com/products:
 
-sudo a2ensite new.silkroademart.com.conf
 <html>
 <head><title>Test Page</title></head>
 <body><h1>This is a test HTML page</h1></body>
