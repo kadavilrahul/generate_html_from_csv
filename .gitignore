@@ -17,3 +17,6 @@ setup_file_versioning.sh
 *.xml
 config.json
 replace.sh
+coding_task_manager/
+venv/
+version03_venv_backend/

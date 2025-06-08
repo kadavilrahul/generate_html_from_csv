@@ -1,0 +1,22 @@
+{
+  "run_script_generation_prompt": {
+    "description": "Generate a comprehensive run.sh script for setting up and executing a given project.",
+    "instructions": "You are an expert in Linux shell scripting and Python project setup. Your task is to generate a 'run.sh' script that automates the entire process of setting up the environment, installing dependencies, and running the 'prd_generator.py' script. The script should be executable on a standard Linux environment (e.g., Ubuntu, Debian).",
+    "requirements": [
+      "The script must be named 'run.sh'.",
+      "It should start with a shebang: `#!/bin/bash`.",
+      "Include comments for each major step.",
+      "Ensure proper error handling (e.g., `set -e`).",
+      "Steps to include:",
+      "1.  **Environment Setup**: Create and activate a Python virtual environment.",
+      "2.  **Dependency Installation**: Install all required packages listed in the project's dependencies file (e.g., `requirements.txt` for Python, `package.json` for Node.js, `pom.xml` for Java Maven, etc.). Specify the appropriate package manager.",
+      "3.  **Execution**: Run the project's main script or entry point. The script should handle any necessary user input during execution.",
+      "4.  **Cleanup (Optional)**: Add a commented-out section for deactivating the virtual environment or cleaning up if necessary."
+    ],
+    "context_files": [
+      "<dependencies_file_name>",
+      "<main_script_name>"
+    ],
+    "example_run_script_structure_reference": "Refer to `example.txt` for a general idea of how a comprehensive run script with comments and ordered steps should look, but tailor the commands specifically to the target project."
+  }
+}
