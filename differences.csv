@@ -1,0 +1,15 @@
+Feature,version_01,version_02
+Important files,setup.sh,"gulpfile.js, product.ejs"
+Project Setup,"Sets up project structure (directories, permissions)",Relies on existing project structure
+Dependency Management,Installs dependencies using npm,Assumes dependencies are already installed
+Template Engine,Uses EJS for templating,Uses EJS for templating
+CSV Processing,Parses CSV using csv-parser,Parses CSV using csvtojson
+Image Handling,Downloads images from URLs,Assumes images are already available
+HTML Generation,Generates HTML files from CSV data and EJS template,Generates HTML files from CSV data and EJS template
+Sitemap Generation,Generates sitemap.xml,No sitemap generation
+XML Generation,Generates products_database.xml,No XML generation
+Web Server Configuration,Sets web server permissions,No web server configuration
+Cleanup,Includes cleanup process to remove all files except data and public folders,No cleanup process
+Automation,Basic shell script,Uses Gulp for automation
+Output Location,Creates public/products directory,/var/www/test.silkroademart.com
+Base URL,Dynamically generates base URL,No base URL generation

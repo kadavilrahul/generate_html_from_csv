@@ -10,7 +10,6 @@ This repository contains is built to automate the installation of development to
 - Apache/Nginx server
 - Php
 
-
 Clone this repository files again to the current location. (Delete any unwanted files in the location first if it exists)
 
 ```bash

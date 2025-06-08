@@ -1,11 +1,11 @@
-# Version 03: CSV to HTML Conversion Project
+# Version 02: CSV to HTML Conversion Project
 
 This project is designed to generate HTML pages from CSV files using Gulp.
 
 ## Project Structure
 
 ```
-version_03/
+version_02/
 ├── products.csv      # Input CSV file
 ├── product.ejs       # EJS template for HTML generation
 ├── gulpfile.js       # Gulp tasks for CSV to HTML conversion
@@ -26,7 +26,7 @@ version_03/
 You can use the `run.sh` script to set up and run the HTML generation.
 
 ```bash
-cd version_03_cline_testing
+cd version_02
 ```
 
 ```bash
