@@ -23,18 +23,13 @@ version_03/
 
 ### Installation
 
-1.  **Gulp Dependencies:**
-    ```bash
-    cd version_03_cline_testing
-    npm install
-    ```
-
-### Running the Project
-
 You can use the `run.sh` script to set up and run the HTML generation.
 
 ```bash
 cd version_03_cline_testing
+```
+
+```bash
 bash run.sh
 ```
 

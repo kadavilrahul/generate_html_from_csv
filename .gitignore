@@ -1,12 +1,7 @@
 # Ignore files and directories that should not be tracked by Git
 # This file is used to specify intentionally untracked files that Git should ignore
 *.html
-*.log
 node_modules/
-*.pid
-*.webp
-*.xml
-package-lock.json
-replace.sh
 coding_task_manager/
 venv/
+package-lock.json
