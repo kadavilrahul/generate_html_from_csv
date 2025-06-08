@@ -1,0 +1,17 @@
+{
+  "name": "version_03",
+  "version": "1.0.0",
+  "description": "Codebase rebuild and CSV to HTML conversion project.",
+  "main": "gulpfile.js",
+  "scripts": {
+    "gulp": "gulp"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "csvtojson": "^2.0.10",
+    "ejs": "^3.1.9"
+  }
+}
