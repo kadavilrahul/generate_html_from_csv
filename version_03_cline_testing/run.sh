@@ -33,5 +33,5 @@ fi
 # 4. Cleanup (Optional): Add a commented-out section for deactivating the virtual environment or cleaning up if necessary.
 : '
 # To stop the running processes (if they are still active):
-# kill $BACKEND_PID
+# pkill -f "npm run gulp csvToHtml"
 '
