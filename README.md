@@ -31,6 +31,11 @@ cd version_02
 ```bash
 cd version_03
 ```
+
+```bash
+cd version_04
+```
+
 Run the script to generate html pages
 
 ```bash
