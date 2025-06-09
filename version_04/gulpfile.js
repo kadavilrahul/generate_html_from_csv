@@ -5,17 +5,14 @@ const path = require('path');
 const ejs = require('ejs');
 const axios = require('axios');
 const xml2js = require('xml2js');
+const readline = require('readline');
 
-const csvFilePath = './products.csv'; // Relative to gulpfile.js
+let csvFilePath = './products.csv'; // Default CSV file, can be changed
 let outputDir = './public/products'; // Output directory
 let imagesDir = './public/images'; // Images directory
 const templatePath = './product.ejs'; // Relative to gulpfile.js
 let baseUrl = 'https://your_website.com'; // Replace with your base URL
 const dataDir = './data';
-const cacheFilePath = path.join(dataDir, 'generation_cache.json');
-
-// Global flags
-let forceRegeneration = false;
 const cacheFilePath = path.join(dataDir, 'generation_cache.json');
 
 // Global variables for incremental processing
@@ -58,6 +55,68 @@ function sanitizeFilename(filename) {
         .replace(/(^-|-$)/g, '');
 }
 
+// Function to list and select CSV files
+async function selectCSVFile() {
+  return new Promise((resolve, reject) => {
+    // Get all CSV files in the current directory
+    const csvFiles = fs.readdirSync('.').filter(file => 
+      file.toLowerCase().endsWith('.csv') && fs.statSync(file).isFile()
+    );
+
+    if (csvFiles.length === 0) {
+      console.log('No CSV files found in the current directory.');
+      resolve('./products.csv'); // Default fallback
+      return;
+    }
+
+    console.log('\nAvailable CSV files:');
+    csvFiles.forEach((file, index) => {
+      const stats = fs.statSync(file);
+      const modifiedDate = stats.mtime.toISOString().split('T')[0];
+      const size = (stats.size / 1024).toFixed(2);
+      console.log(`${index + 1}. ${file} (Modified: ${modifiedDate}, Size: ${size} KB)`);
+    });
+
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    rl.question('\nEnter the number of the CSV file to use (or press Enter for default products.csv): ', (answer) => {
+      rl.close();
+      
+      if (!answer.trim()) {
+        console.log('Using default: products.csv');
+        resolve('./products.csv');
+        return;
+      }
+
+      const fileIndex = parseInt(answer) - 1;
+      if (fileIndex >= 0 && fileIndex < csvFiles.length) {
+        const selectedFile = `./${csvFiles[fileIndex]}`;
+        console.log(`Selected CSV file: ${csvFiles[fileIndex]}`);
+        resolve(selectedFile);
+      } else {
+        console.log('Invalid selection. Using default: products.csv');
+        resolve('./products.csv');
+      }
+    });
+  });
+}
+
+// Function to display usage help
+function displayHelp() {
+  console.log('\n=== Product Page Generator - CSV File Selection ===');
+  console.log('Usage options:');
+  console.log('1. Interactive mode: npm start (will show CSV file selection menu)');
+  console.log('2. Command line mode: npm start -- --csvFile=your_file.csv --folderLocation=/path/to/output');
+  console.log('\nExamples:');
+  console.log('  npm start -- --csvFile=products_01.csv');
+  console.log('  npm start -- --csvFile=products_backup.csv --folderLocation=/var/www/mysite.com');
+  console.log('\nNote: If csvFile is not specified or not found, interactive selection menu will be shown.');
+  console.log('======================================================\n');
+}
+
 // Function to download image
 async function downloadImage(url, filepath) {
   try {
@@ -90,8 +149,13 @@ async function generateProductsCSV(products) {
   }).join('\n');
 
   const csvContent = csvHeader + csvRows;
-  fs.writeFileSync(path.join(dataDir, 'products_database.csv'), csvContent);
-  console.log('Products CSV generated successfully!');
+  
+  // Generate timestamp for filename
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').split('.')[0];
+  const timestampedFilename = `products_database_${timestamp}.csv`;
+  
+  fs.writeFileSync(path.join(dataDir, timestampedFilename), csvContent);
+  console.log(`Products CSV generated successfully: ${timestampedFilename}`);
 }
 
 // Function to generate sitemap
@@ -112,15 +176,19 @@ async function generateSitemap(products) {
     `).join('')}
 </urlset>`;
 
-  fs.writeFileSync(path.join(dataDir, 'sitemap.xml'), sitemapContent);
-  console.log('Sitemap generated successfully!');
+  // Generate timestamp for filename
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').split('.')[0];
+  const timestampedFilename = `sitemap_${timestamp}.xml`;
+
+  fs.writeFileSync(path.join(dataDir, timestampedFilename), sitemapContent);
+  console.log(`Sitemap generated successfully: ${timestampedFilename}`);
 }
 
-function csvToHtml(folderLocation, cb) {
+function csvToHtml(folderLocation, selectedCsvPath, cb) {
   csv()
-    .fromFile(csvFilePath)
+    .fromFile(selectedCsvPath)
     .then(async (jsonObj) => {
-      ensureOutputDir(folderLocation, cb);
+      ensureOutputDir(folderLocation, () => {}); // Empty callback since we're handling async differently
       for (const product of jsonObj) {
         try {
           // Generate image filename from title
@@ -171,13 +239,55 @@ function csvToHtml(folderLocation, cb) {
     });
 }
 
-gulp.task('default', (cb) => {
+gulp.task('default', async (cb) => {
   let folderLocation = '';
+  let csvFileArg = '';
+  let showHelp = false;
+  
   process.argv.slice(2).forEach(arg => {
     if (arg.startsWith('--folderLocation=')) {
       folderLocation = arg.split('=')[1];
     }
+    if (arg.startsWith('--csvFile=')) {
+      csvFileArg = arg.split('=')[1];
+    }
+    if (arg === '--help' || arg === '-h') {
+      showHelp = true;
+    }
   });
+  
+  if (showHelp) {
+    displayHelp();
+    cb();
+    return;
+  }
+  
   folderLocation = folderLocation || '/var/www/test.silkroademart.com';
-  gulp.series((done) => ensureOutputDir(folderLocation, done), (done) => csvToHtml(folderLocation, done))(cb);
+  
+  try {
+    let selectedCsvPath;
+    
+    // If CSV file specified via command line, use it
+    if (csvFileArg) {
+      if (fs.existsSync(csvFileArg)) {
+        selectedCsvPath = csvFileArg;
+        console.log(`Using CSV file from command line: ${csvFileArg}`);
+      } else {
+        console.log(`CSV file not found: ${csvFileArg}. Falling back to selection menu.`);
+        selectedCsvPath = await selectCSVFile();
+      }
+    } else {
+      // Otherwise, show selection menu
+      selectedCsvPath = await selectCSVFile();
+    }
+    
+    // Run the tasks with the selected CSV file
+    gulp.series(
+      (done) => ensureOutputDir(folderLocation, done), 
+      (done) => csvToHtml(folderLocation, selectedCsvPath, done)
+    )(cb);
+  } catch (error) {
+    console.error('Error in task execution:', error);
+    cb(error);
+  }
 });
