@@ -170,21 +170,32 @@ update_search_php() {
         # Copy search.php to destination
         cp "$search_php_source" "$search_php_dest"
         
-        # Update database credentials if available
+        # Update PostgreSQL database credentials if available
         if [[ -n "$DB_NAME" && -n "$DB_USER" && -n "$DB_PASSWORD" ]]; then
+            # Update PostgreSQL configuration
             sed -i "s/'dbname'   => 'your_db_name'/'dbname'   => '$DB_NAME'/g" "$search_php_dest"
             sed -i "s/'user'    => 'your_user_name'/'user'    => '$DB_USER'/g" "$search_php_dest"
             sed -i "s/'password' => 'your_password'/'password' => '$DB_PASSWORD'/g" "$search_php_dest"
             
-            echo -e "${GREEN}✓ search.php updated and copied to: $search_php_dest${NC}"
-            echo -e "${BLUE}Database configuration updated with:${NC}"
+            echo -e "${GREEN}✓ PostgreSQL configuration updated in search.php${NC}"
+            echo -e "${BLUE}PostgreSQL Database configuration updated with:${NC}"
             echo "  - Database: $DB_NAME"
             echo "  - User: $DB_USER"
             echo "  - Password: [hidden]"
         else
-            echo -e "${RED}✗ Could not extract database credentials for search.php update${NC}"
-            echo -e "${YELLOW}⚠ search.php copied but database credentials need manual update${NC}"
+            echo -e "${RED}✗ Could not extract PostgreSQL database credentials for search.php update${NC}"
         fi
+        
+        # Note: WordPress MySQL credentials need to be configured separately
+        echo -e "${YELLOW}⚠ WordPress MySQL configuration in search.php needs manual setup${NC}"
+        echo -e "${BLUE}Please update the WordPress MySQL configuration section with:${NC}"
+        echo "  - host: your WordPress MySQL host"
+        echo "  - dbname: your WordPress database name"
+        echo "  - user: your WordPress database user"
+        echo "  - password: your WordPress database password"
+        echo "  - prefix: your WordPress table prefix (usually 'wp_')"
+        
+        echo -e "${GREEN}✓ search.php copied to: $search_php_dest${NC}"
     else
         echo -e "${YELLOW}⚠ search.php not found in current directory${NC}"
         echo "  Please ensure search.php is in the same directory as this script"

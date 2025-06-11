@@ -15,15 +15,19 @@ check_setup_completion() {
 
 # Function to run setup.sh
 run_setup_script() {
-    if [[ -f "./setup.sh" ]]; then
-        log_message "INFO" "Running setup.sh script..."
+    # Get the script directory to find setup.sh in modules folder
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local setup_script="$script_dir/setup.sh"
+    
+    if [[ -f "$setup_script" ]]; then
+        log_message "INFO" "Running setup.sh script from modules directory..."
         echo -e "\n${BLUE}=== Running Website Setup ===${NC}"
         
         # Make setup.sh executable
-        chmod +x ./setup.sh
+        chmod +x "$setup_script"
         
         # Run setup.sh
-        if sudo ./setup.sh; then
+        if sudo "$setup_script"; then
             # Create setup completion marker
             touch "$SETUP_MARKER_FILE"
             log_message "SUCCESS" "setup.sh completed successfully - marker file created"
@@ -34,9 +38,10 @@ run_setup_script() {
             exit 1
         fi
     else
-        log_message "ERROR" "setup.sh file not found in current directory"
-        echo -e "${RED}Error: setup.sh file not found in current directory${NC}"
-        echo "Please ensure setup.sh is in the same directory as run.sh"
+        log_message "ERROR" "setup.sh file not found in modules directory"
+        echo -e "${RED}Error: setup.sh file not found in modules directory${NC}"
+        echo "Expected location: $setup_script"
+        echo "Please ensure setup.sh is in the modules directory"
         exit 1
     fi
 }

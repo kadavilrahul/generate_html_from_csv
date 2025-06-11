@@ -51,26 +51,26 @@ handle_generation_workflow() {
         # Run gulp with appropriate flags
         if [[ "$generation_mode" == "force" ]]; then
             log_message "INFO" "Running gulp with force flag"
-            if [[ "$FORCE_MODE" == "true" ]]; then
-                npx gulp --folderLocation="$folder_location" --force
-            else
-                npx gulp --folderLocation="$folder_location" --force
+            if ! npx gulp --folderLocation="$folder_location" --force; then
+                log_message "ERROR" "Gulp generation with force flag failed"
+                echo -e "${RED}✗ Generation process failed${NC}"
+                echo -e "${YELLOW}Check if gulpfile.js is properly configured and all dependencies are installed${NC}"
+                return 1
             fi
         else
             log_message "INFO" "Running gulp with incremental mode"
-            npx gulp --folderLocation="$folder_location"
+            if ! npx gulp --folderLocation="$folder_location"; then
+                log_message "ERROR" "Gulp generation in incremental mode failed"
+                echo -e "${RED}✗ Generation process failed${NC}"
+                echo -e "${YELLOW}Check if gulpfile.js is properly configured and all dependencies are installed${NC}"
+                return 1
+            fi
         fi
         
-        # Check if gulp command was successful
-        if [ $? -eq 0 ]; then
-            log_message "SUCCESS" "Gulp generation completed successfully"
-            display_generation_summary "$folder_location"
-            return 0
-        else
-            log_message "ERROR" "Gulp generation failed"
-            echo -e "${RED}✗ Generation process failed${NC}"
-            return 1
-        fi
+        # If we reach here, gulp was successful
+        log_message "SUCCESS" "Gulp generation completed successfully"
+        display_generation_summary "$folder_location"
+        return 0
     else
         log_message "INFO" "User chose to skip generation process"
         echo -e "${YELLOW}Skipping HTML page generation and database operations.${NC}"
@@ -78,10 +78,51 @@ handle_generation_workflow() {
     fi
 }
 
+# Function to check if Node.js and npm are installed
+check_nodejs_installation() {
+    if ! command -v node &> /dev/null; then
+        log_message "ERROR" "Node.js is not installed"
+        echo -e "${RED}Error: Node.js is not installed${NC}"
+        echo -e "${YELLOW}Please install Node.js first:${NC}"
+        echo "  Ubuntu/Debian: sudo apt update && sudo apt install -y nodejs npm"
+        echo "  CentOS/RHEL: sudo yum install -y nodejs npm"
+        echo "  Or visit: https://nodejs.org/"
+        return 1
+    fi
+    
+    if ! command -v npm &> /dev/null; then
+        log_message "ERROR" "npm is not installed"
+        echo -e "${RED}Error: npm is not installed${NC}"
+        echo -e "${YELLOW}Please install npm first:${NC}"
+        echo "  Ubuntu/Debian: sudo apt install -y npm"
+        echo "  CentOS/RHEL: sudo yum install -y npm"
+        return 1
+    fi
+    
+    # Check Node.js version
+    local node_version=$(node --version 2>/dev/null)
+    local npm_version=$(npm --version 2>/dev/null)
+    
+    log_message "INFO" "Node.js version: $node_version"
+    log_message "INFO" "npm version: $npm_version"
+    echo -e "${GREEN}✓ Node.js $node_version detected${NC}"
+    echo -e "${GREEN}✓ npm $npm_version detected${NC}"
+    
+    return 0
+}
+
 # Function to install dependencies
 install_dependencies() {
     log_message "INFO" "Starting dependency installation"
     echo -e "\n${BLUE}=== Installing Dependencies ===${NC}"
+    
+    # Check if Node.js and npm are installed
+    if ! check_nodejs_installation; then
+        log_message "ERROR" "Node.js/npm installation check failed"
+        echo -e "${RED}Cannot proceed without Node.js and npm${NC}"
+        echo -e "${YELLOW}Please install Node.js and npm, then run the script again${NC}"
+        exit 1
+    fi
     
     # Install root Gulp Node.js dependencies
     echo "Installing Node.js dependencies..."
@@ -92,9 +133,15 @@ install_dependencies() {
     fi
     
     log_message "INFO" "Running npm install"
-    npm install
-    log_message "SUCCESS" "Node.js dependencies installed successfully"
-    echo -e "${GREEN}✓ Node.js dependencies installed successfully${NC}"
+    if npm install; then
+        log_message "SUCCESS" "Node.js dependencies installed successfully"
+        echo -e "${GREEN}✓ Node.js dependencies installed successfully${NC}"
+    else
+        log_message "ERROR" "npm install failed"
+        echo -e "${RED}✗ npm install failed${NC}"
+        echo -e "${YELLOW}Please check your npm configuration and try again${NC}"
+        exit 1
+    fi
 }
 
 # Function to validate generation files
