@@ -1,0 +1,37 @@
+[2025-06-11 15:35:35 IST] [INFO] Product Page Generator started
+[2025-06-11 15:35:35 IST] [INFO] Validating script environment
+[2025-06-11 15:35:35 IST] [SUCCESS] Environment validation completed
+[2025-06-11 15:35:35 IST] [WARNING] Setup marker file not found - setup.sh may not have been run
+[2025-06-11 15:35:41 IST] [WARNING] User chose to skip setup.sh
+[2025-06-11 15:35:41 IST] [INFO] Starting domain folder search
+[2025-06-11 15:35:44 IST] [INFO] Selected folder location: /var/www/test.silkroademart.com
+[2025-06-11 15:35:44 IST] [INFO] Detected domain: test.silkroademart.com
+[2025-06-11 15:35:44 IST] [INFO] Directory already exists: /var/www/test.silkroademart.com
+[2025-06-11 15:35:44 IST] [INFO] Checking PostgreSQL installation
+[2025-06-11 15:35:44 IST] [SUCCESS] PostgreSQL is already installed
+[2025-06-11 15:35:44 IST] [SUCCESS] PostgreSQL service is running
+[2025-06-11 15:35:44 IST] [INFO] Starting database setup check
+[2025-06-11 15:35:44 IST] [WARNING] Database not found for domain: test.silkroademart.com
+[2025-06-11 15:35:49 IST] [INFO] User chose to create database
+[2025-06-11 15:35:49 IST] [INFO] Starting database setup for domain: test.silkroademart.com
+[2025-06-11 15:35:49 IST] [INFO] Storing database credentials in configuration file
+[2025-06-11 15:35:49 IST] [INFO] Creating PostgreSQL database and user
+[2025-06-11 15:35:49 IST] [SUCCESS] Database 'test_silkroademart_com_db' and user 'test_silkroademart_com_user' created successfully
+[2025-06-11 15:35:49 IST] [SUCCESS] Database setup completed successfully
+[2025-06-11 15:35:49 IST] [INFO] Updating search.php with database credentials
+[2025-06-11 15:35:49 IST] [INFO] Starting HTML generation and database population phase
+[2025-06-11 15:35:49 IST] [INFO] Starting dependency installation
+[2025-06-11 15:35:49 IST] [INFO] Running npm install
+[2025-06-11 15:36:01 IST] [SUCCESS] Node.js dependencies installed successfully
+[2025-06-11 15:36:04 IST] [INFO] User selected force complete regeneration mode
+[2025-06-11 15:36:04 IST] [INFO] Checking required files for generation
+[2025-06-11 15:36:04 IST] [SUCCESS] products.csv found
+[2025-06-11 15:36:04 IST] [SUCCESS] product.ejs template found
+[2025-06-11 15:36:04 IST] [SUCCESS] gulpfile.js found
+[2025-06-11 15:36:04 IST] [INFO] Starting gulp generation process with mode: force
+[2025-06-11 15:36:04 IST] [INFO] Running gulp with force flag
+[2025-06-11 15:36:08 IST] [SUCCESS] Gulp generation completed successfully
+[2025-06-11 15:36:08 IST] [SUCCESS] Generation process completed successfully
+[2025-06-11 15:36:09 IST] [INFO] Total HTML files generated: 10
+[2025-06-11 15:36:09 IST] [INFO] Total images downloaded: 10
+[2025-06-11 15:36:09 IST] [SUCCESS] Products database CSV generated successfully
