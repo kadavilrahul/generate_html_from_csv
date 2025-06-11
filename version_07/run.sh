@@ -24,6 +24,9 @@ main() {
     display_header
     log_message "INFO" "Product Page Generator started"
     
+    # Cleanup node_modules automatically
+    cleanup_node_modules
+    
     # Validate environment
     if [[ -f "$SCRIPT_DIR/modules/validate_environment.sh" ]]; then
         source "$SCRIPT_DIR/modules/validate_environment.sh"

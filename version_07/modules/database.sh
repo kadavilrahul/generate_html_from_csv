@@ -8,16 +8,16 @@ sanitize_db_name() {
     echo "${domain//[.-]/_}" | tr '[:upper:]' '[:lower:]'
 }
 
-# Generate secure password
+# Generate secure password (simplified format)
 generate_password() {
     local domain=$1
-    echo "$(sanitize_db_name $domain)_$(openssl rand -hex 8)"
+    echo "$(sanitize_db_name $domain)_2@"
 }
 
 # Check if database exists for domain
 check_database_exists() {
     local domain=$1
-    local credentials_file="./database_credentials.conf"
+    local credentials_file="$CREDENTIALS_FILE"
     
     if [[ -f "$credentials_file" ]]; then
         if grep -q "Domain: $domain" "$credentials_file"; then
@@ -30,7 +30,7 @@ check_database_exists() {
 # Get database credentials for domain
 get_database_credentials() {
     local domain=$1
-    local credentials_file="./database_credentials.conf"
+    local credentials_file="$CREDENTIALS_FILE"
     
     if [[ -f "$credentials_file" ]]; then
         # Extract credentials for the specific domain
@@ -55,7 +55,7 @@ get_database_credentials() {
     return 1
 }
 
-# Setup database for domain (following old_run.sh approach)
+# Setup database for domain
 setup_database() {
     local domain=$1
     local db_name="$(sanitize_db_name $domain)_db"
@@ -69,16 +69,16 @@ setup_database() {
     echo "Username: $db_user"
 
     # Create credentials file if it doesn't exist
-    touch ./database_credentials.conf
-    chmod 600 ./database_credentials.conf
+    touch "$CREDENTIALS_FILE"
+    chmod 600 "$CREDENTIALS_FILE"
 
     log_message "INFO" "Storing database credentials in configuration file"
     # Store credentials in configuration file
-    echo "Domain: $domain" >> ./database_credentials.conf
-    echo "Database: $db_name" >> ./database_credentials.conf
-    echo "Username: $db_user" >> ./database_credentials.conf
-    echo "Password: $db_password" >> ./database_credentials.conf
-    echo "----------------------------------------" >> ./database_credentials.conf
+    echo "Domain: $domain" >> "$CREDENTIALS_FILE"
+    echo "Database: $db_name" >> "$CREDENTIALS_FILE"
+    echo "Username: $db_user" >> "$CREDENTIALS_FILE"
+    echo "Password: $db_password" >> "$CREDENTIALS_FILE"
+    echo "----------------------------------------" >> "$CREDENTIALS_FILE"
 
     log_message "INFO" "Creating PostgreSQL database and user"
     # Create database, user, and table in single session (like old_run.sh)
@@ -191,7 +191,7 @@ update_search_php() {
     fi
 }
 
-# Handle database setup workflow (following old_run.sh approach)
+# Handle database setup workflow
 handle_database_setup() {
     local domain=$1
     
@@ -199,13 +199,48 @@ handle_database_setup() {
     echo -e "\n${BLUE}=== Database Setup ===${NC}"
     
     if check_database_exists "$domain"; then
-        log_message "SUCCESS" "Database already exists for domain: $domain"
-        echo -e "${GREEN}✓ Database already exists for domain: $domain${NC}"
-        echo "Database credentials found in ./database_credentials.conf"
+        log_message "SUCCESS" "Database credentials found for domain: $domain"
+        echo -e "${GREEN}✓ Database credentials found for domain: $domain${NC}"
+        echo "Database credentials found in $CREDENTIALS_FILE"
         
         # Load existing credentials
         get_database_credentials "$domain"
-        return 0
+        
+        # Test connection
+        if test_database_connection "$domain"; then
+            log_message "SUCCESS" "Database connection test successful"
+            echo -e "${GREEN}✓ Database connection working properly${NC}"
+            return 0
+        else
+            log_message "WARNING" "Database connection failed - authentication issue detected"
+            echo -e "${YELLOW}⚠ Database connection failed - authentication issue detected${NC}"
+            echo -e "${BLUE}This usually happens when database exists but password doesn't match${NC}"
+            
+            if [[ "$FORCE_MODE" == "true" ]]; then
+                recreate_db="y"
+            else
+                read -p "Do you want to recreate the database with correct credentials? (y/n): " recreate_db
+            fi
+            
+            if [[ $recreate_db =~ ^[Yy]$ ]]; then
+                log_message "INFO" "User chose to recreate database"
+                echo -e "${BLUE}Cleaning up and recreating database...${NC}"
+                
+                if cleanup_database "$domain" && setup_database "$domain"; then
+                    log_message "SUCCESS" "Database recreated successfully"
+                    echo -e "${GREEN}✓ Database recreated successfully${NC}"
+                    return 0
+                else
+                    log_message "ERROR" "Failed to recreate database"
+                    echo -e "${RED}✗ Failed to recreate database${NC}"
+                    return 1
+                fi
+            else
+                log_message "WARNING" "User chose to continue with broken database"
+                echo -e "${YELLOW}Continuing with existing database (may cause issues)${NC}"
+                return 1
+            fi
+        fi
     else
         log_message "WARNING" "Database not found for domain: $domain"
         echo -e "${YELLOW}Database not found for domain: $domain${NC}"
