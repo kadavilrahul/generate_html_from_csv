@@ -15,6 +15,18 @@ DATA_DIR="./data"
 # File paths (now in data directory)
 LOG_FILE="$DATA_DIR/product_generator.log"
 SETUP_MARKER_FILE="$DATA_DIR/.setup_completed"
+
+# Function to get domain-specific credentials file
+get_credentials_file() {
+    local domain=$1
+    if [[ -n "$domain" ]]; then
+        echo "$DATA_DIR/${domain}_database_credentials.conf"
+    else
+        echo "$DATA_DIR/database_credentials.conf"
+    fi
+}
+
+# Legacy credentials file (for backward compatibility)
 CREDENTIALS_FILE="$DATA_DIR/database_credentials.conf"
 
 # Global variables

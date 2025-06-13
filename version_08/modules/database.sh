@@ -17,7 +17,7 @@ generate_password() {
 # Check if database exists for domain
 check_database_exists() {
     local domain=$1
-    local credentials_file="$CREDENTIALS_FILE"
+    local credentials_file=$(get_credentials_file "$domain")
     
     if [[ -f "$credentials_file" ]]; then
         if grep -q "Domain: $domain" "$credentials_file"; then
@@ -30,29 +30,94 @@ check_database_exists() {
 # Get database credentials for domain
 get_database_credentials() {
     local domain=$1
-    local credentials_file="$CREDENTIALS_FILE"
+    local credentials_file=$(get_credentials_file "$domain")
     
     if [[ -f "$credentials_file" ]]; then
-        # Extract credentials for the specific domain
-        local section_start=$(grep -n "Domain: $domain" "$credentials_file" | cut -d: -f1)
-        if [[ -n "$section_start" ]]; then
-            local section_end=$(tail -n +$((section_start + 1)) "$credentials_file" | grep -n "^Domain:" | head -1 | cut -d: -f1)
-            if [[ -n "$section_end" ]]; then
-                section_end=$((section_start + section_end))
-            else
-                section_end=$(wc -l < "$credentials_file")
-            fi
-            
-            # Extract credentials from the section
-            local section=$(sed -n "${section_start},${section_end}p" "$credentials_file")
-            export DB_NAME=$(echo "$section" | grep "Database:" | cut -d' ' -f2)
-            export DB_USER=$(echo "$section" | grep "Username:" | cut -d' ' -f2)
-            export DB_PASSWORD=$(echo "$section" | grep "Password:" | cut -d' ' -f2)
-            
+        # Since each file contains only one domain, extract credentials directly
+        export DB_NAME=$(grep "Database:" "$credentials_file" | cut -d' ' -f2)
+        export DB_USER=$(grep "Username:" "$credentials_file" | cut -d' ' -f2)
+        export DB_PASSWORD=$(grep "Password:" "$credentials_file" | cut -d' ' -f2)
+        
+        if [[ -n "$DB_NAME" && -n "$DB_USER" && -n "$DB_PASSWORD" ]]; then
             return 0
         fi
     fi
     return 1
+}
+
+# Remove existing credentials for a domain (delete domain-specific file)
+remove_domain_credentials() {
+    local domain=$1
+    local credentials_file=$(get_credentials_file "$domain")
+    
+    if [[ -f "$credentials_file" ]]; then
+        log_message "INFO" "Removing credentials file for domain: $domain"
+        rm -f "$credentials_file"
+        log_message "SUCCESS" "Removed credentials file: $credentials_file"
+        echo -e "${GREEN}✓ Removed credentials for domain: $domain${NC}"
+    else
+        log_message "INFO" "No credentials file found for domain: $domain"
+        echo -e "${YELLOW}No credentials file found for domain: $domain${NC}"
+    fi
+}
+
+# List all domains that have credential files
+list_domains_in_credentials() {
+    local domains=()
+    
+    # Find all domain-specific credential files in data directory
+    for file in "$DATA_DIR"/*_database_credentials.conf; do
+        if [[ -f "$file" ]]; then
+            # Extract domain name from filename
+            local filename=$(basename "$file")
+            local domain="${filename%_database_credentials.conf}"
+            domains+=("$domain")
+        fi
+    done
+    
+    # Also check legacy credentials file for backward compatibility
+    if [[ -f "$CREDENTIALS_FILE" ]]; then
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^Domain:\ (.+)$ ]]; then
+                local legacy_domain="${BASH_REMATCH[1]}"
+                # Only add if not already in domains array
+                if [[ ! " ${domains[@]} " =~ " ${legacy_domain} " ]]; then
+                    domains+=("$legacy_domain")
+                fi
+            fi
+        done < "$CREDENTIALS_FILE"
+    fi
+    
+    printf '%s\n' "${domains[@]}"
+}
+
+# Clean up stale credential files for non-existent databases
+cleanup_stale_credentials() {
+    log_message "INFO" "Cleaning up stale database credentials"
+    echo -e "${BLUE}Checking for stale database credentials...${NC}"
+    
+    local domains=($(list_domains_in_credentials))
+    local cleaned_count=0
+    
+    for domain in "${domains[@]}"; do
+        if get_database_credentials "$domain"; then
+            # Test if database actually exists
+            if ! PGPASSWORD="$DB_PASSWORD" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1;" >/dev/null 2>&1; then
+                log_message "WARNING" "Database for domain '$domain' not accessible, removing credentials file"
+                echo -e "${YELLOW}⚠ Removing stale credentials for domain: $domain${NC}"
+                remove_domain_credentials "$domain"
+                ((cleaned_count++))
+            fi
+        fi
+    done
+    
+    if [[ $cleaned_count -gt 0 ]]; then
+        log_message "SUCCESS" "Cleaned up $cleaned_count stale credential files"
+        echo -e "${GREEN}✓ Cleaned up $cleaned_count stale credential files${NC}"
+    else
+        log_message "INFO" "No stale credentials found"
+        echo -e "${GREEN}✓ No stale credentials found${NC}"
+    fi
 }
 
 # Setup database for domain
@@ -61,24 +126,26 @@ setup_database() {
     local db_name="$(sanitize_db_name $domain)_db"
     local db_user="$(sanitize_db_name $domain)_user"
     local db_password="$(generate_password $domain)"
+    local credentials_file=$(get_credentials_file "$domain")
 
     log_message "INFO" "Starting database setup for domain: $domain"
     echo -e "\n${YELLOW}=== Database Setup ===${NC}"
     echo -e "${BLUE}Setting up database for domain: $domain${NC}"
     echo "Database name: $db_name"
     echo "Username: $db_user"
+    echo "Credentials file: $credentials_file"
 
-    # Create credentials file if it doesn't exist
-    touch "$CREDENTIALS_FILE"
-    chmod 600 "$CREDENTIALS_FILE"
-
-    log_message "INFO" "Storing database credentials in configuration file"
-    # Store credentials in configuration file
-    echo "Domain: $domain" >> "$CREDENTIALS_FILE"
-    echo "Database: $db_name" >> "$CREDENTIALS_FILE"
-    echo "Username: $db_user" >> "$CREDENTIALS_FILE"
-    echo "Password: $db_password" >> "$CREDENTIALS_FILE"
-    echo "----------------------------------------" >> "$CREDENTIALS_FILE"
+    log_message "INFO" "Storing database credentials in domain-specific file: $credentials_file"
+    
+    # Create/overwrite domain-specific credentials file
+    cat > "$credentials_file" <<EOF
+Domain: $domain
+Database: $db_name
+Username: $db_user
+Password: $db_password
+----------------------------------------
+EOF
+    chmod 600 "$credentials_file"
 
     log_message "INFO" "Creating PostgreSQL database and user"
     # Create database, user, and table in single session (like old_run.sh)
@@ -130,10 +197,38 @@ EOF
     fi
 }
 
+# Cleanup database for domain
+cleanup_database() {
+    local domain=$1
+    local db_name="$(sanitize_db_name $domain)_db"
+    local db_user="$(sanitize_db_name $domain)_user"
+    
+    sudo -u postgres psql -c "DROP DATABASE IF EXISTS $db_name; DROP USER IF EXISTS $db_user;" 2>/dev/null
+}
+
 # Import data from CSV into the products table
 import_product_data() {
     local domain=$1
-    local csv_file="$SCRIPT_DIR/data/products_database.csv"
+    local csv_file=""
+    
+    # Look for products_database.csv first, then pattern-based files
+    if [[ -f "$SCRIPT_DIR/data/products_database.csv" ]]; then
+        csv_file="$SCRIPT_DIR/data/products_database.csv"
+    else
+        # Look for pattern-based database CSV files (e.g., products_01_database.csv)
+        # Use find instead of ls to avoid exit code issues with set -e
+        local pattern_file=$(find "$SCRIPT_DIR/data/" -name "*_database.csv" -type f 2>/dev/null | head -1)
+        if [[ -n "$pattern_file" && -f "$pattern_file" ]]; then
+            csv_file="$pattern_file"
+        fi
+    fi
+
+    # Check if we found a CSV file
+    if [[ -z "$csv_file" || ! -f "$csv_file" ]]; then
+        log_message "ERROR" "Product data CSV file not found. Looked for: $SCRIPT_DIR/data/products_database.csv and $SCRIPT_DIR/data/*_database.csv"
+        echo -e "${RED}✗ Product data CSV file not found${NC}"
+        return 1
+    fi
 
     log_message "INFO" "Starting data import for domain: $domain from $csv_file"
     echo -e "\n${BLUE}=== Data Import ===${NC}"
@@ -143,13 +238,6 @@ import_product_data() {
     if ! get_database_credentials "$domain"; then
         log_message "ERROR" "Could not get database credentials for $domain for data import"
         echo -e "${RED}✗ Could not get database credentials for data import${NC}"
-        return 1
-    fi
-
-    # Check if the CSV file exists
-    if [[ ! -f "$csv_file" ]]; then
-        log_message "ERROR" "Product data CSV file not found: $csv_file"
-        echo -e "${RED}✗ Product data CSV file not found: $csv_file${NC}"
         return 1
     fi
 
@@ -243,14 +331,17 @@ update_search_php() {
 # Handle database setup workflow
 handle_database_setup() {
     local domain=$1
+    local credentials_file=$(get_credentials_file "$domain")
     
-    log_message "INFO" "Starting database setup check"
+    log_message "INFO" "Starting database setup check for domain: $domain"
     echo -e "\n${BLUE}=== Database Setup ===${NC}"
+    echo -e "${BLUE}Domain: $domain${NC}"
+    echo -e "${BLUE}Credentials file: $credentials_file${NC}"
     
     if check_database_exists "$domain"; then
         log_message "SUCCESS" "Database credentials found for domain: $domain"
         echo -e "${GREEN}✓ Database credentials found for domain: $domain${NC}"
-        echo "Database credentials found in $CREDENTIALS_FILE"
+        echo "Database credentials found in $credentials_file"
         
         # Load existing credentials
         get_database_credentials "$domain"

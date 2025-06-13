@@ -149,13 +149,24 @@ validate_generation_files() {
     log_message "INFO" "Checking required files for generation"
     echo -e "\n${BLUE}Checking required files...${NC}"
     
-    if [[ ! -f "products.csv" ]]; then
-        log_message "ERROR" "products.csv not found in current directory"
-        echo -e "${RED}Error: products.csv not found in current directory.${NC}"
+    # Check for CSV files in root directory
+    local csv_files=(*.csv)
+    if [[ ! -f "${csv_files[0]}" ]]; then
+        log_message "ERROR" "No CSV files found in current directory"
+        echo -e "${RED}Error: No CSV files found in current directory.${NC}"
+        echo -e "${YELLOW}Please ensure you have at least one CSV file in the root directory${NC}"
         exit 1
     fi
-    log_message "SUCCESS" "products.csv found"
-    echo -e "${GREEN}✓ products.csv found${NC}"
+    
+    # Display found CSV files
+    log_message "INFO" "Found CSV files for processing"
+    echo -e "${GREEN}✓ Found CSV files:${NC}"
+    for csv_file in "${csv_files[@]}"; do
+        if [[ -f "$csv_file" ]]; then
+            log_message "INFO" "CSV file found: $csv_file"
+            echo -e "${GREEN}  - $csv_file${NC}"
+        fi
+    done
     
     if [[ ! -f "product.ejs" ]]; then
         log_message "ERROR" "product.ejs template not found in current directory"

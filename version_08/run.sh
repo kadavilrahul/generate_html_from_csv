@@ -59,10 +59,10 @@ main() {
             --force) export FORCE_MODE=true; shift ;;
             --skip-setup) export SKIP_SETUP=true; shift ;;
             --skip-cleanup) export SKIP_CLEANUP=true; shift ;;
-            --cleanup-only) 
+            --cleanup-only)
                 [[ -d "node_modules" ]] && rm -rf node_modules
                 exit 0 ;;
-            --help|-h) 
+            --help|-h)
                 echo "Usage: $0 [--force] [--skip-setup] [--skip-cleanup] [--cleanup-only] [--help]"
                 exit 0 ;;
             *) shift ;;
@@ -70,6 +70,21 @@ main() {
     done
 
     echo "=== Product Page Generator ==="
+    
+    # Ensure data directory exists and move legacy files if needed
+    mkdir -p "$DATA_DIR"
+    
+    # Move legacy log file to data directory if it exists in root
+    if [[ -f "product_generator.log" && ! -f "$LOG_FILE" ]]; then
+        echo "Moving product_generator.log to data directory..."
+        mv "product_generator.log" "$LOG_FILE"
+    fi
+    
+    # Move legacy setup marker to data directory if it exists in root
+    if [[ -f ".setup_completed" && ! -f "$SETUP_MARKER_FILE" ]]; then
+        echo "Moving .setup_completed to data directory..."
+        mv ".setup_completed" "$SETUP_MARKER_FILE"
+    fi
     
     # Install prerequisites
     install_nodejs
@@ -118,8 +133,8 @@ main() {
         
         # Cleanup
         if [[ "$SKIP_CLEANUP" != "true" ]]; then
-            [[ -d "node_modules" ]] && rm -rf node_modules
-            [[ -n "$FOLDER_LOCATION" && -d "$FOLDER_LOCATION/node_modules" ]] && rm -rf "$FOLDER_LOCATION/node_modules"
+            [[ -d "node_modules" ]] && rm -rf node_modules || true
+            [[ -n "$FOLDER_LOCATION" && -d "$FOLDER_LOCATION/node_modules" ]] && rm -rf "$FOLDER_LOCATION/node_modules" || true
         fi
     else
         exit 1

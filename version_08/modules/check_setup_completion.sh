@@ -1,6 +1,7 @@
 #!/bin/bash
 
-SETUP_MARKER_FILE="./.setup_completed"
+# Use the SETUP_MARKER_FILE from config.sh (will be sourced before this module)
+# SETUP_MARKER_FILE is defined in config.sh as "$DATA_DIR/.setup_completed"
 
 # Function to check if setup.sh was run previously
 check_setup_completion() {

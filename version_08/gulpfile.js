@@ -202,17 +202,25 @@ function sanitizeDbName(domain) {
 
 // Function to load database credentials from config file
 function loadDbCredentials(folderLocation) {
-  const credentialsFile = './database_credentials.conf';
+  const domain = folderLocation.split('/').pop();
+  const domainCredentialsFile = `./data/${domain}_database_credentials.conf`;
+  const legacyCredentialsFile = './database_credentials.conf';
   
+  // Try domain-specific credentials file first
+  let credentialsFile = domainCredentialsFile;
   if (!fs.existsSync(credentialsFile)) {
-    console.log('Database credentials file not found. Database operations will be skipped.');
-    console.log('Run the database setup first to create credentials.');
-    return null;
+    // Fall back to legacy credentials file
+    credentialsFile = legacyCredentialsFile;
+    if (!fs.existsSync(credentialsFile)) {
+      console.log('Database credentials file not found. Database operations will be skipped.');
+      console.log('Run the database setup first to create credentials.');
+      console.log(`Looked for: ${domainCredentialsFile} and ${legacyCredentialsFile}`);
+      return null;
+    }
   }
 
   try {
     const credentialsContent = fs.readFileSync(credentialsFile, 'utf8');
-    const domain = folderLocation.split('/').pop();
     
     // Parse credentials for the specific domain
     const lines = credentialsContent.split('\n');
