@@ -213,7 +213,10 @@ main() {
     
     # Check Node.js prerequisites first
     check_nodejs_prerequisites
-    
+
+    # Check and install PHP prerequisites
+    check_and_install_php
+
     # Validate environment
     if [[ -f "$SCRIPT_DIR/modules/validate_environment.sh" ]]; then
         source "$SCRIPT_DIR/modules/validate_environment.sh"
