@@ -1,0 +1,23 @@
+{
+  "name": "product-page-generator-v4",
+  "version": "4.0.0",
+  "description": "Enhanced CSV to HTML conversion project with incremental generation capabilities.",
+  "main": "gulpfile.js",
+  "scripts": {
+    "gulp": "gulp",
+    "csvToHtml": "gulp default",
+    "start": "gulp default",
+    "force": "gulp default --force"
+  },
+  "keywords": ["csv", "html", "generator", "incremental", "products"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "csvtojson": "^2.0.10",
+    "ejs": "^3.1.9",
+    "axios": "^1.6.7",
+    "xml2js": "^0.6.2",
+    "pg": "^8.11.3"
+  }
+}
