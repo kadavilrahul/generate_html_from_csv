@@ -130,6 +130,44 @@ EOF
     fi
 }
 
+# Import data from CSV into the products table
+import_product_data() {
+    local domain=$1
+    local csv_file="$SCRIPT_DIR/data/products_database.csv"
+
+    log_message "INFO" "Starting data import for domain: $domain from $csv_file"
+    echo -e "\n${BLUE}=== Data Import ===${NC}"
+    echo -e "${BLUE}Importing data from $csv_file into database for domain: $domain${NC}"
+
+    # Get credentials
+    if ! get_database_credentials "$domain"; then
+        log_message "ERROR" "Could not get database credentials for $domain for data import"
+        echo -e "${RED}✗ Could not get database credentials for data import${NC}"
+        return 1
+    fi
+
+    # Check if the CSV file exists
+    if [[ ! -f "$csv_file" ]]; then
+        log_message "ERROR" "Product data CSV file not found: $csv_file"
+        echo -e "${RED}✗ Product data CSV file not found: $csv_file${NC}"
+        return 1
+    fi
+
+    # Use psql to import data from CSV
+    # Ensure the CSV header matches the table columns
+    PGPASSWORD="$DB_PASSWORD" psql -h localhost -U "$DB_USER" -d "$DB_NAME" -c "\COPY products(title, price, product_link, category, image_url) FROM '$csv_file' DELIMITER ',' CSV HEADER;"
+
+    if [ $? -eq 0 ]; then
+        log_message "SUCCESS" "Data imported successfully into products table for domain: $domain"
+        echo -e "${GREEN}✓ Data imported successfully into products table${NC}"
+        return 0
+    else
+        log_message "ERROR" "Error importing data into products table for domain: $domain"
+        echo -e "${RED}✗ Error importing data into products table${NC}"
+        return 1
+    fi
+}
+
 # Test database connection
 test_database_connection() {
     local domain=$1

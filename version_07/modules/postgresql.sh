@@ -37,8 +37,8 @@ install_postgresql() {
             sudo apt update
             
             # Install PostgreSQL and contrib package
-            echo -e "${BLUE}Installing PostgreSQL...${NC}"
-            sudo apt install -y postgresql postgresql-contrib
+            echo -e "${BLUE}Installing PostgreSQL and PHP extension...${NC}"
+            sudo apt install -y postgresql postgresql-contrib php-pgsql
             
             # Start and enable PostgreSQL service
             echo -e "${BLUE}Starting PostgreSQL service...${NC}"

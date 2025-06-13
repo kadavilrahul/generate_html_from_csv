@@ -1,211 +1,311 @@
 #!/bin/bash
 
-# Exit immediately if a command exits with a non-zero status.
+# Product Page Generator - Optimized Version
 set -e
 
-echo "Setting up and running the Product Page Generator project..."
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Ask for the folder location
-read -p "Please provide the folder location (e.g., /var/www/yourwebsite.com): " folder_location
+# Source configuration and logging
+source "$SCRIPT_DIR/modules/config.sh"
+source "$SCRIPT_DIR/modules/logging.sh"
+source "$SCRIPT_DIR/modules/database.sh"
 
-# Validate folder location input
-if [[ -z "$folder_location" ]]; then
-    echo "Error: Folder location cannot be empty."
-    exit 1
-fi
-
-# Create the folder if it doesn't exist
-if [[ ! -d "$folder_location" ]]; then
-    echo "Creating directory: $folder_location"
-    sudo mkdir -p "$folder_location"
-    echo "Directory created successfully."
-else
-    echo "Directory already exists: $folder_location"
-fi
-
-# 1. Dependency Installation: Install all required packages.
-
-# Install Node.js and npm if not present
-echo "1.1. Checking and installing Node.js and npm..."
-if ! command -v node &> /dev/null; then
-    echo "Installing Node.js and npm..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo bash -
-    sudo apt-get install -y nodejs
-    echo "Node.js and npm installed."
-else
-    echo "Node.js is already installed."
-fi
-
-# Install root Gulp Node.js dependencies
-echo "1.2. Installing root Gulp Node.js dependencies..."
-if [[ ! -f "package.json" ]]; then
-    echo "Error: package.json not found in current directory."
-    exit 1
-fi
-
-npm install
-echo "Root Gulp Node.js dependencies installed."
-
-# 2. Execution: Run the project's main scripts.
-
-echo "2. Running the project components:"
-
-# Gulp CSV to HTML conversion
-echo "This will generate HTML files in $folder_location."
-
-# Ask user for generation mode
-echo "Choose generation mode:"
-echo "1. Incremental generation (only process new/changed products)"
-echo "2. Force complete regeneration (process all products)"
-echo "3. Skip generation"
-read -p "Enter your choice (1/2/3): " generation_choice
-
-if [[ "$generation_choice" == "1" ]]; then
-    echo "Starting incremental HTML generation..."
-    generation_mode="incremental"
-elif [[ "$generation_choice" == "2" ]]; then
-    echo "Starting force complete regeneration..."
-    generation_mode="force"
-elif [[ "$generation_choice" == "3" ]]; then
-    echo "Skipping HTML page generation."
-    generation_mode="skip"
-else
-    echo "Invalid choice. Defaulting to incremental generation."
-    generation_mode="incremental"
-fi
-
-if [[ "$generation_mode" != "skip" ]]; then
-    # Check if required files exist
-    if [[ ! -f "products.csv" ]]; then
-        echo "Error: products.csv not found in current directory."
-        exit 1
-    fi
+# Check if Node.js and npm are installed
+check_nodejs_prerequisites() {
+    log_message "INFO" "Checking Node.js and npm prerequisites"
+    echo -e "\n${BLUE}=== Checking Node.js Prerequisites ===${NC}"
     
-    if [[ ! -f "product.ejs" ]]; then
-        echo "Error: product.ejs template not found in current directory."
-        exit 1
-    fi
+    local nodejs_missing=false
+    local npm_missing=false
     
-    if [[ ! -f "gulpfile.js" ]]; then
-        echo "Error: gulpfile.js not found in current directory."
-        exit 1
-    fi
-    
-    # Run gulp with appropriate flags
-    if [[ "$generation_mode" == "force" ]]; then
-        npx gulp --folderLocation="$folder_location" --force
+    if ! command -v node &> /dev/null; then
+        log_message "ERROR" "Node.js is not installed"
+        echo -e "${RED}✗ Node.js is not installed${NC}"
+        nodejs_missing=true
     else
-        npx gulp --folderLocation="$folder_location"
+        local node_version=$(node --version 2>/dev/null)
+        log_message "INFO" "Node.js version: $node_version"
+        echo -e "${GREEN}✓ Node.js $node_version detected${NC}"
     fi
     
-    echo "HTML page generation complete."
-    echo "Generated files are located in:"
-    echo "  - HTML files: $folder_location/public/products/"
-    echo "  - Images: $folder_location/public/images/"
-    echo "  - Data files: ./data/"
-    
-    # Display summary of generated files
-    if [[ -d "$folder_location/public/products" ]]; then
-        html_count=$(find "$folder_location/public/products" -name "*.html" | wc -l)
-        echo "Total HTML files generated: $html_count"
+    if ! command -v npm &> /dev/null; then
+        log_message "ERROR" "npm is not installed"
+        echo -e "${RED}✗ npm is not installed${NC}"
+        npm_missing=true
+    else
+        local npm_version=$(npm --version 2>/dev/null)
+        log_message "INFO" "npm version: $npm_version"
+        echo -e "${GREEN}✓ npm $npm_version detected${NC}"
     fi
     
-    if [[ -d "$folder_location/public/images" ]]; then
-        image_count=$(find "$folder_location/public/images" -type f | wc -l)
-        echo "Total images downloaded: $image_count"
+    if [[ "$nodejs_missing" == "true" || "$npm_missing" == "true" ]]; then
+        echo -e "\n${YELLOW}=== Node.js Installation Required ===${NC}"
+        echo -e "${YELLOW}This script requires Node.js and npm to generate HTML pages.${NC}"
+        echo -e "${BLUE}Installation commands:${NC}"
+        echo "  Ubuntu/Debian: sudo apt update && sudo apt install -y nodejs npm"
+        echo "  CentOS/RHEL: sudo yum install -y nodejs npm"
+        echo "  Or visit: https://nodejs.org/"
+        echo ""
+        
+        while true; do
+            read -p "Do you want to install Node.js and npm now? (y/n): " install_choice
+            case $install_choice in
+                [Yy]* )
+                    log_message "INFO" "User chose to install Node.js and npm"
+                    install_nodejs
+                    break
+                    ;;
+                [Nn]* )
+                    log_message "WARNING" "User chose not to install Node.js and npm"
+                    echo -e "${YELLOW}⚠ Cannot proceed without Node.js and npm${NC}"
+                    echo "Please install Node.js and npm manually, then run this script again."
+                    exit 1
+                    ;;
+                * )
+                    echo "Please answer yes (y) or no (n)."
+                    ;;
+            esac
+        done
+    else
+        log_message "SUCCESS" "Node.js and npm prerequisites satisfied"
+        echo -e "${GREEN}✓ Node.js and npm prerequisites satisfied${NC}"
     fi
-    
-    if [[ -f "./data/sitemap.xml" ]]; then
-        echo "Sitemap generated: ./data/sitemap.xml"
-    fi
-    
-    if [[ -f "./data/products_database.csv" ]]; then
-        echo "Products database generated: ./data/products_database.csv"
-    fi
-    
-else
-    echo "Skipping HTML page generation."
-fi
+}
 
-# 3. Database Setup (Optional)
-echo ""
-echo "=== Database Setup ==="
-read -p "Do you want to set up a PostgreSQL database with search functionality? (y/n): " setup_database
-
-if [[ $setup_database =~ ^[Yy]$ ]]; then
-    echo "Setting up database and search functionality..."
+# Install Node.js and npm
+install_nodejs() {
+    log_message "INFO" "Starting Node.js and npm installation"
+    echo -e "\n${BLUE}=== Installing Node.js and npm ===${NC}"
     
-    # Check if products_database.csv exists
-    if [[ ! -f "./data/products_database.csv" ]]; then
-        echo "Error: ./data/products_database.csv not found."
-        echo "This file should be generated during HTML page creation."
-        echo "Please run HTML generation first, or check if the file exists."
-        read -p "Do you want to continue anyway? (y/n): " continue_anyway
-        if [[ ! $continue_anyway =~ ^[Yy]$ ]]; then
-            echo "Skipping database setup."
-        else
-            echo "Continuing with database setup (without data population)..."
-            # Run database creation script
-            if [[ -f "create_database.sh" ]]; then
-                chmod +x create_database.sh
-                ./create_database.sh "$folder_location"
+    # Detect OS and install accordingly
+    if [[ -f /etc/debian_version ]]; then
+        echo "Detected Debian/Ubuntu system"
+        log_message "INFO" "Installing Node.js and npm on Debian/Ubuntu"
+        
+        if apt update && apt install -y nodejs npm; then
+            log_message "SUCCESS" "Node.js and npm installed successfully"
+            echo -e "${GREEN}✓ Node.js and npm installed successfully${NC}"
+            
+            # Verify installation
+            if command -v node &> /dev/null && command -v npm &> /dev/null; then
+                local node_version=$(node --version 2>/dev/null)
+                local npm_version=$(npm --version 2>/dev/null)
+                echo -e "${GREEN}✓ Node.js $node_version installed${NC}"
+                echo -e "${GREEN}✓ npm $npm_version installed${NC}"
             else
-                echo "Error: create_database.sh not found."
+                log_message "ERROR" "Node.js/npm installation verification failed"
+                echo -e "${RED}✗ Installation verification failed${NC}"
+                exit 1
+            fi
+        else
+            log_message "ERROR" "Failed to install Node.js and npm"
+            echo -e "${RED}✗ Failed to install Node.js and npm${NC}"
+            echo "Please install manually and try again."
+            exit 1
+        fi
+    elif [[ -f /etc/redhat-release ]]; then
+        echo "Detected RedHat/CentOS system"
+        log_message "INFO" "Installing Node.js and npm on RedHat/CentOS"
+        
+        if yum install -y nodejs npm; then
+            log_message "SUCCESS" "Node.js and npm installed successfully"
+            echo -e "${GREEN}✓ Node.js and npm installed successfully${NC}"
+        else
+            log_message "ERROR" "Failed to install Node.js and npm"
+            echo -e "${RED}✗ Failed to install Node.js and npm${NC}"
+            exit 1
+        fi
+    else
+        log_message "ERROR" "Unsupported operating system for automatic installation"
+        echo -e "${RED}✗ Unsupported operating system for automatic installation${NC}"
+        echo "Please install Node.js and npm manually from https://nodejs.org/"
+        exit 1
+    fi
+}
+
+# Display header
+display_header() {
+    echo -e "${BLUE}=== Product Page Generator ===${NC}"
+    echo "Features: PostgreSQL setup, HTML generation, search functionality"
+    echo
+}
+
+# Cleanup node_modules folder after page generation
+cleanup_node_modules() {
+    log_message "INFO" "Starting node_modules cleanup process"
+    echo -e "\n${BLUE}=== Node Modules Cleanup ===${NC}"
+    
+    # Check if node_modules exists in current directory
+    if [[ -d "node_modules" ]]; then
+        echo -e "${YELLOW}Found node_modules folder in current directory${NC}"
+        echo -e "${BLUE}Removing node_modules to free up space...${NC}"
+        
+        # Get size before removal for logging
+        local size_before=$(du -sh node_modules 2>/dev/null | cut -f1 || echo "unknown")
+        
+        # Remove node_modules folder
+        if rm -rf node_modules; then
+            log_message "SUCCESS" "node_modules folder removed successfully (was $size_before)"
+            echo -e "${GREEN}✓ node_modules folder removed successfully (freed: $size_before)${NC}"
+        else
+            log_message "ERROR" "Failed to remove node_modules folder"
+            echo -e "${RED}✗ Failed to remove node_modules folder${NC}"
+            return 1
+        fi
+    else
+        log_message "INFO" "No node_modules folder found in current directory"
+        echo -e "${GREEN}✓ No node_modules folder found - nothing to clean${NC}"
+    fi
+    
+    # Also check in the domain folder if it exists
+    if [[ -n "$FOLDER_LOCATION" && -d "$FOLDER_LOCATION" ]]; then
+        if [[ -d "$FOLDER_LOCATION/node_modules" ]]; then
+            echo -e "${YELLOW}Found node_modules folder in domain directory: $FOLDER_LOCATION${NC}"
+            echo -e "${BLUE}Removing node_modules from domain directory...${NC}"
+            
+            # Get size before removal for logging
+            local domain_size_before=$(du -sh "$FOLDER_LOCATION/node_modules" 2>/dev/null | cut -f1 || echo "unknown")
+            
+            # Remove node_modules folder from domain directory
+            if rm -rf "$FOLDER_LOCATION/node_modules"; then
+                log_message "SUCCESS" "node_modules folder removed from domain directory (was $domain_size_before)"
+                echo -e "${GREEN}✓ node_modules removed from domain directory (freed: $domain_size_before)${NC}"
+            else
+                log_message "ERROR" "Failed to remove node_modules from domain directory"
+                echo -e "${RED}✗ Failed to remove node_modules from domain directory${NC}"
+                return 1
             fi
         fi
-    else
-        echo "Found products database CSV file: ./data/products_database.csv"
-        # Run database creation script
-        if [[ -f "create_database.sh" ]]; then
-            chmod +x create_database.sh
-            ./create_database.sh "$folder_location"
+    fi
+    
+    return 0
+}
+
+# Standalone cleanup function that can be called independently
+cleanup_only() {
+    display_header
+    log_message "INFO" "Running standalone node_modules cleanup"
+    
+    # Set a basic folder location if not set
+    if [[ -z "$FOLDER_LOCATION" ]]; then
+        # Try to find domain folders in current directory
+        local domain_dirs=($(find . -maxdepth 1 -type d -name "*.com" -o -name "*.org" -o -name "*.net" 2>/dev/null))
+        if [[ ${#domain_dirs[@]} -gt 0 ]]; then
+            echo -e "${BLUE}Found domain directories: ${domain_dirs[*]}${NC}"
+            for dir in "${domain_dirs[@]}"; do
+                export FOLDER_LOCATION="$dir"
+                cleanup_node_modules
+            done
         else
-            echo "Error: create_database.sh not found."
+            cleanup_node_modules
+        fi
+    else
+        cleanup_node_modules
+    fi
+}
+
+# Main execution function
+main() {
+    handle_arguments "$@"
+    display_header
+    log_message "INFO" "Product Page Generator started"
+    
+    # Check Node.js prerequisites first
+    check_nodejs_prerequisites
+    
+    # Validate environment
+    if [[ -f "$SCRIPT_DIR/modules/validate_environment.sh" ]]; then
+        source "$SCRIPT_DIR/modules/validate_environment.sh"
+        validate_script_environment
+    fi
+    
+    # Handle setup check (unless skipped)
+    if [[ "$SKIP_SETUP" != "true" ]]; then
+        if [[ -f "$SCRIPT_DIR/modules/check_setup_completion.sh" ]]; then
+            source "$SCRIPT_DIR/modules/check_setup_completion.sh"
+            handle_setup_check
         fi
     fi
-else
-    echo "Skipping database setup."
-fi
-
-echo "Project setup and execution completed successfully!"
-
-# Display final summary
-echo ""
-echo "=== SUMMARY ==="
-echo "Folder location: $folder_location"
-if [[ "$generation_mode" != "skip" ]]; then
-    echo "HTML pages generated: Yes"
-    if [[ -d "$folder_location/public/products" ]]; then
-        html_count=$(find "$folder_location/public/products" -name "*.html" | wc -l)
-        echo "Total HTML files: $html_count"
+    
+    # Setup domain folder
+    source "$SCRIPT_DIR/modules/domain_manager.sh"
+    setup_domain_folder
+    
+    # Setup PostgreSQL
+    source "$SCRIPT_DIR/modules/postgresql.sh"
+    setup_postgresql
+    
+    # Setup database
+    if handle_database_setup "$DOMAIN"; then
+        # Import data into the database
+        import_product_data "$DOMAIN"
+        # Update search.php with credentials
+        update_search_php "$FOLDER_LOCATION"
     fi
-else
-    echo "HTML pages generated: No"
-fi
-
-if [[ $setup_database =~ ^[Yy]$ ]]; then
-    echo "Database setup: Attempted"
-    if [[ -f "./data/website_db_credentials.conf" ]]; then
-        echo "Database credentials: ./data/website_db_credentials.conf"
+    
+    # Handle HTML generation
+    source "$SCRIPT_DIR/modules/generator.sh"
+    if handle_generation_workflow "$FOLDER_LOCATION"; then
+        echo -e "\n${GREEN}=== Setup Complete! ===${NC}"
+        echo -e "${BLUE}Domain: $DOMAIN${NC}"
+        echo -e "${BLUE}Location: $FOLDER_LOCATION${NC}"
+        [[ -n "$DB_NAME" ]] && echo -e "${BLUE}Database: $DB_NAME${NC}"
+        
+        # Cleanup node_modules after successful page generation (unless skipped)
+        if [[ "$SKIP_CLEANUP" != "true" ]]; then
+            cleanup_node_modules
+        else
+            log_message "INFO" "node_modules cleanup skipped due to --skip-cleanup flag"
+            echo -e "${YELLOW}⚠ node_modules cleanup skipped${NC}"
+        fi
+    else
+        exit 1
     fi
-    if [[ -f "$folder_location/public/search.php" ]]; then
-        domain=$(basename "$folder_location")
-        echo "Search functionality: https://$domain/search.php"
-    fi
-else
-    echo "Database setup: Skipped"
-fi
+}
 
-# 4. Cleanup (Optional): Add a commented-out section for deactivating the virtual environment or cleaning up if necessary.
-: '
-# To stop the running processes (if they are still active):
-# pkill -f "npx gulp"
+# Handle command line arguments
+handle_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --force) export FORCE_MODE=true; shift ;;
+            --skip-setup) export SKIP_SETUP=true; shift ;;
+            --skip-cleanup) export SKIP_CLEANUP=true; shift ;;
+            --cleanup-only) cleanup_only; exit 0 ;;
+            --help|-h) display_help; exit 0 ;;
+            *) echo -e "${YELLOW}Unknown option: $1${NC}"; shift ;;
+        esac
+    done
+}
 
-# To clean up generated files (use with caution):
-# rm -rf "$folder_location/public"
-# rm -rf "./data"
+# Display help
+display_help() {
+    echo "Product Page Generator"
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "This script generates HTML product pages from CSV data and sets up a PostgreSQL database."
+    echo ""
+    echo "Prerequisites:"
+    echo "  - Node.js and npm (will be installed automatically if missing)"
+    echo "  - PostgreSQL (will be installed automatically if missing)"
+    echo "  - Apache web server (configured by setup.sh)"
+    echo ""
+    echo "Options:"
+    echo "  --force         Force complete regeneration"
+    echo "  --skip-setup    Skip setup completion check"
+    echo "  --skip-cleanup  Skip node_modules cleanup after generation"
+    echo "  --cleanup-only  Only run node_modules cleanup (no generation)"
+    echo "  --help, -h      Display this help"
+    echo ""
+    echo "Examples:"
+    echo "  $0                    # Run with interactive prompts"
+    echo "  $0 --force           # Force complete regeneration"
+    echo "  $0 --skip-setup      # Skip Apache setup check"
+    echo "  $0 --cleanup-only    # Only cleanup node_modules folders"
+}
 
-# To reinstall dependencies:
-# rm -rf node_modules package-lock.json
-# npm install
-'
+# Error handling
+trap 'log_message "ERROR" "Script failed at line $LINENO"' ERR
+
+# Execute main function
+main "$@"

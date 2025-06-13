@@ -244,18 +244,18 @@ $search_term = isset($_GET['term']) ? sanitize_text_field($_GET['term']) : '';
 $pg_config = array(
     'host'    => 'localhost',
     'port'    => '5432',
-    'dbname'   => 'your_pg_db_name',  // Update with your Postgres DB name
-    'user'    => 'your_pg_user_name', // Update with your Postgres DB user
-    'password' => 'your_pg_password' // Update with your Postgres DB password
+    'dbname'   => 'your_db_name',  // Update with your Postgres DB name
+    'user'    => 'your_user_name', // Update with your Postgres DB user
+    'password' => 'your_password' // Update with your Postgres DB password
 );
 
 // WordPress MySQL Database configuration (new)
 $wp_config = array(
-    'host'     => 'localhost',    // Update with your WordPress DB host
-    'dbname'   => 'your_wp_db_name',    // Update with your WordPress DB name
-    'user'     => 'your_wp_user_name',      // Update with your WordPress DB user
+    'host'     => 'localhost',        // Update with your WordPress DB host
+    'dbname'   => 'your_wp_db_name',  // Update with your WordPress DB name
+    'user'     => 'your_wp_user_name', // Update with your WordPress DB user
     'password' => 'your_wp_password',  // Update with your WordPress DB password
-    'prefix'   => 'wp_'           // WordPress table prefix (usually wp_)
+    'prefix'   => 'wp_'               // WordPress table prefix (usually wp_)
 );
 
 // Debug function to log info

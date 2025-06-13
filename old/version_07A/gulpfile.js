@@ -6,7 +6,6 @@ const ejs = require('ejs');
 const axios = require('axios');
 const xml2js = require('xml2js');
 const readline = require('readline');
-const { Client } = require('pg');
 
 let csvFilePath = './products.csv'; // Default CSV file, can be changed
 let outputDir = './public/products'; // Output directory
@@ -15,15 +14,6 @@ const templatePath = './product.ejs'; // Relative to gulpfile.js
 let baseUrl = 'https://your_website.com'; // Replace with your base URL
 const dataDir = './data';
 const cacheFilePath = path.join(dataDir, 'generation_cache.json');
-
-// Database configuration
-let dbConfig = {
-  host: 'localhost',
-  port: 5432,
-  database: null, // Will be set based on domain
-  user: null,     // Will be set based on domain
-  password: null  // Will be set based on domain
-};
 
 // Global variables for incremental processing
 let forceRegeneration = false;
@@ -194,234 +184,6 @@ async function generateSitemap(products, sourceFileName) {
   console.log(`Sitemap generated successfully: ${outputFilename}`);
 }
 
-// Function to sanitize domain to valid database name
-function sanitizeDbName(domain) {
-  // Replace dots and hyphens with underscores and convert to lowercase
-  return domain.replace(/[.-]/g, '_').toLowerCase();
-}
-
-// Function to load database credentials from config file
-function loadDbCredentials(folderLocation) {
-  const credentialsFile = './database_credentials.conf';
-  
-  if (!fs.existsSync(credentialsFile)) {
-    console.log('Database credentials file not found. Database operations will be skipped.');
-    console.log('Run the database setup first to create credentials.');
-    return null;
-  }
-
-  try {
-    const credentialsContent = fs.readFileSync(credentialsFile, 'utf8');
-    const domain = folderLocation.split('/').pop();
-    
-    // Parse credentials for the specific domain
-    const lines = credentialsContent.split('\n');
-    let currentDomain = null;
-    let credentials = null;
-    
-    for (const line of lines) {
-      if (line.startsWith('Domain: ')) {
-        currentDomain = line.replace('Domain: ', '').trim();
-      } else if (currentDomain === domain) {
-        if (line.startsWith('Database: ')) {
-          credentials = credentials || {};
-          credentials.database = line.replace('Database: ', '').trim();
-        } else if (line.startsWith('Username: ')) {
-          credentials = credentials || {};
-          credentials.user = line.replace('Username: ', '').trim();
-        } else if (line.startsWith('Password: ')) {
-          credentials = credentials || {};
-          credentials.password = line.replace('Password: ', '').trim();
-        }
-      }
-    }
-    
-    if (credentials && credentials.database && credentials.user && credentials.password) {
-      return {
-        host: 'localhost',
-        port: 5432,
-        database: credentials.database,
-        user: credentials.user,
-        password: credentials.password
-      };
-    }
-    
-    console.log(`Database credentials not found for domain: ${domain}`);
-    return null;
-  } catch (error) {
-    console.error('Error reading database credentials:', error);
-    return null;
-  }
-}
-
-// Function to test database connection
-async function testDbConnection(config) {
-  const client = new Client(config);
-  try {
-    await client.connect();
-    await client.query('SELECT NOW()');
-    await client.end();
-    return true;
-  } catch (error) {
-    console.error('Database connection test failed:', error.message);
-    return false;
-  }
-}
-
-// Function to create products table if it doesn't exist
-async function createProductsTable(config) {
-  const client = new Client(config);
-  try {
-    await client.connect();
-    
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS products (
-        id SERIAL PRIMARY KEY,
-        title VARCHAR(255),
-        price INTEGER,
-        product_link TEXT,
-        category VARCHAR(100),
-        image_url TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-      
-      CREATE INDEX IF NOT EXISTS idx_products_title ON products(title);
-      CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-    `;
-    
-    await client.query(createTableQuery);
-    console.log('Products table created/verified successfully');
-    
-    await client.end();
-    return true;
-  } catch (error) {
-    console.error('Error creating products table:', error);
-    return false;
-  }
-}
-
-// Function to clear existing products (for full regeneration)
-async function clearProducts(config) {
-  const client = new Client(config);
-  try {
-    await client.connect();
-    await client.query('DELETE FROM products');
-    console.log('Existing products cleared from database');
-    await client.end();
-    return true;
-  } catch (error) {
-    console.error('Error clearing products:', error);
-    return false;
-  }
-}
-
-// Function to insert products into database
-async function insertProducts(config, products) {
-  const client = new Client(config);
-  try {
-    await client.connect();
-    
-    let insertedCount = 0;
-    let updatedCount = 0;
-    
-    for (const product of products) {
-      const title = product.Title;
-      const price = parseInt(product['Regular Price']) || 0;
-      const productLink = `${baseUrl}/public/products/${sanitizeFilename(product.Title)}`;
-      const category = product.Category;
-      const imageExt = path.extname(product.Image) || '.jpg';
-      const imageUrl = `${baseUrl}/public/images/${sanitizeFilename(product.Title)}${imageExt}`;
-      
-      // Check if product already exists
-      const checkQuery = 'SELECT id FROM products WHERE title = $1';
-      const checkResult = await client.query(checkQuery, [title]);
-      
-      if (checkResult.rows.length > 0) {
-        // Update existing product
-        const updateQuery = `
-          UPDATE products 
-          SET price = $2, product_link = $3, category = $4, image_url = $5, updated_at = CURRENT_TIMESTAMP
-          WHERE title = $1
-        `;
-        await client.query(updateQuery, [title, price, productLink, category, imageUrl]);
-        updatedCount++;
-      } else {
-        // Insert new product
-        const insertQuery = `
-          INSERT INTO products (title, price, product_link, category, image_url)
-          VALUES ($1, $2, $3, $4, $5)
-        `;
-        await client.query(insertQuery, [title, price, productLink, category, imageUrl]);
-        insertedCount++;
-      }
-    }
-    
-    console.log(`Database updated: ${insertedCount} products inserted, ${updatedCount} products updated`);
-    
-    await client.end();
-    return { inserted: insertedCount, updated: updatedCount };
-  } catch (error) {
-    console.error('Error inserting products into database:', error);
-    return null;
-  }
-}
-
-// Function to create or update database
-async function createOrUpdateDatabase(products, sourceFileName, folderLocation) {
-  console.log('\n=== Database Operations ===');
-  
-  // Load database credentials
-  const dbCredentials = loadDbCredentials(folderLocation);
-  if (!dbCredentials) {
-    console.log('Skipping database operations - no credentials found');
-    return;
-  }
-  
-  console.log(`Connecting to database: ${dbCredentials.database}`);
-  
-  // Test database connection
-  const connectionTest = await testDbConnection(dbCredentials);
-  if (!connectionTest) {
-    console.log('Skipping database operations - connection failed');
-    return;
-  }
-  
-  // Create products table if it doesn't exist
-  const tableCreated = await createProductsTable(dbCredentials);
-  if (!tableCreated) {
-    console.log('Skipping database operations - table creation failed');
-    return;
-  }
-  
-  // Ask user if they want to clear existing products (for full regeneration)
-  if (forceRegeneration) {
-    console.log('Force regeneration enabled - clearing existing products');
-    await clearProducts(dbCredentials);
-  }
-  
-  // Insert/update products
-  const result = await insertProducts(dbCredentials, products);
-  if (result) {
-    console.log('Database operations completed successfully');
-    
-    // Generate database summary
-    const baseName = path.basename(sourceFileName, path.extname(sourceFileName));
-    const summaryFile = path.join(dataDir, `${baseName}_database_summary.txt`);
-    const summaryContent = `Database Update Summary
-Generated: ${new Date().toISOString()}
-Database: ${dbCredentials.database}
-Products Inserted: ${result.inserted}
-Products Updated: ${result.updated}
-Total Products: ${result.inserted + result.updated}
-Source File: ${sourceFileName}
-`;
-    
-    fs.writeFileSync(summaryFile, summaryContent);
-    console.log(`Database summary saved: ${baseName}_database_summary.txt`);
-  }
-}
-
 function csvToHtml(folderLocation, selectedCsvPath, cb) {
   csv()
     .fromFile(selectedCsvPath)
@@ -467,9 +229,6 @@ function csvToHtml(folderLocation, selectedCsvPath, cb) {
       // Generate sitemap and products CSV
       await generateSitemap(jsonObj, selectedCsvPath);
       await generateProductsCSV(jsonObj, selectedCsvPath);
-      
-      // Create or update database
-      await createOrUpdateDatabase(jsonObj, selectedCsvPath, folderLocation);
 
       console.log('CSV to HTML conversion complete.');
       cb(); // Signal completion of the async task
@@ -494,9 +253,6 @@ gulp.task('default', async (cb) => {
     }
     if (arg === '--help' || arg === '-h') {
       showHelp = true;
-    }
-    if (arg === '--force') {
-      forceRegeneration = true;
     }
   });
   
