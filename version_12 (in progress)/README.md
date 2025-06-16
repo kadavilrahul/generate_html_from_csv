@@ -24,7 +24,7 @@ A complete solution that converts CSV product data into static HTML pages served
 
 1. **Generate your product pages:**
    ```bash
-   bash run.sh
+   bash run_min.sh
    ```
    
    **Select to run setup script to configure folders in apache:**
