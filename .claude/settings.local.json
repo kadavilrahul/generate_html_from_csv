@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "Bash(ssh-keygen:*)",
+      "Bash(cat:*)"
+    ],
+    "deny": []
+  }
+}
