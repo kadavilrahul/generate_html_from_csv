@@ -1,9 +1,20 @@
 #!/bin/bash
 set -e
 
-# Minimal Product Page Generator
+# Product Page Generator with Enhanced Category Organization
+# 
+# Configuration (set these environment variables to customize paths):
+# - WEB_ROOT: Web server root directory (default: /var/www)
+# - TEMP_DIR: Temporary files directory (default: /tmp)
+#
+# Example usage with custom paths:
+# WEB_ROOT="/home/websites" TEMP_DIR="/home/temp" ./run.sh
+#
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATA_DIR="/tmp/product_generator_data" # Use temp directory to avoid cluttering project
+# Configurable directories
+DEFAULT_WEB_ROOT="${WEB_ROOT:-/var/www}"
+DEFAULT_TEMP_DIR="${TEMP_DIR:-/tmp}"
+DATA_DIR="$DEFAULT_TEMP_DIR/product_generator_data"
 LOG_FILE="$DATA_DIR/product_generator.log"
 SETUP_MARKER_FILE="$DATA_DIR/.setup_completed"
 CREDENTIALS_FILE="$DATA_DIR/database_credentials.conf"
@@ -38,7 +49,7 @@ log_message() {
 get_credentials_file() {
     local domain=$1
     if [[ -n "$domain" ]]; then
-        local domain_data_dir="/tmp/product_generator_data_${domain}"
+        local domain_data_dir="$DEFAULT_TEMP_DIR/product_generator_data_${domain}"
         mkdir -p "$domain_data_dir"
         echo "$domain_data_dir/${domain}_database_credentials.conf"
     else
@@ -76,14 +87,14 @@ check_root_directory() {
     fi
     
     # Check if we're in the root directory (can find the script in relative path)
-    if [[ -f "generate_html_from_csv/version_12/run.sh" && -f "generate_html_from_csv/version_12/package.json" ]]; then
+    if [[ -f "generate_html_from_csv/version_15_p/run.sh" && -f "generate_html_from_csv/version_15_p/package.json" ]]; then
         log_message "INFO" "✅ Script running from root directory: $current_dir"
         return 0
     fi
     
     # Neither location is correct
     echo "❌ Error: Script must be run from either:"
-    echo "  1. The script directory: /path/to/generate_html_from_csv/version_12/"
+    echo "  1. The script directory: /path/to/generate_html_from_csv/version_15_p/"
     echo "  2. The root directory where the codebase exists"
     echo ""
     echo "Current directory: $current_dir"
@@ -615,10 +626,22 @@ setup_chatbot_complete() {
 
 # Search domain folders
 search_domain_folders() {
-    local www_dir="/var/www"
     local folders=()
     
-    if [[ -d "$www_dir" ]]; then
+    # Check multiple common web root locations
+    local web_roots=("$DEFAULT_WEB_ROOT" "/var/www" "/home" "/opt/www" "/usr/share/nginx" "/srv/www")
+    local www_dir=""
+    
+    # Find the first existing web root directory
+    for root in "${web_roots[@]}"; do
+        if [[ -d "$root" && -r "$root" ]]; then
+            www_dir="$root"
+            break
+        fi
+    done
+    
+    if [[ -n "$www_dir" ]]; then
+        echo "Searching for domain folders in: $www_dir"
         while IFS= read -r -d '' folder; do
             local basename_folder=$(basename "$folder")
             if [[ "$basename_folder" == *.* ]] && [[ "$basename_folder" != "html" ]] && [[ -d "$folder" ]] && [[ -r "$folder" ]]; then
@@ -640,10 +663,12 @@ search_domain_folders() {
                 FOLDER_LOCATION="${folders[$((choice-1))]}"
             fi
         else
-            read -p "Folder location: " FOLDER_LOCATION
+            echo "No domain folders found in $www_dir"
+            read -p "Enter folder location: " FOLDER_LOCATION
         fi
     else
-        read -p "Folder location: " FOLDER_LOCATION
+        echo "No accessible web root directory found. Checked: ${web_roots[*]}"
+        read -p "Enter folder location: " FOLDER_LOCATION
     fi
 }
 # Check setup completion
@@ -704,7 +729,7 @@ setup_domain_folder() {
     export FOLDER_LOCATION
     
     # Update DATA_DIR to be domain-specific in temp directory
-    DATA_DIR="/tmp/product_generator_data_${DOMAIN}"
+    DATA_DIR="$DEFAULT_TEMP_DIR/product_generator_data_${DOMAIN}"
     LOG_FILE="$DATA_DIR/product_generator.log"
     SETUP_MARKER_FILE="$DATA_DIR/.setup_completed"
     CREDENTIALS_FILE="$DATA_DIR/database_credentials.conf"
@@ -786,25 +811,38 @@ setup_postgresql() {
 
 # Find npx command
 find_npx() {
-    # Try common locations
+    # Try command in PATH first
     if command -v npx >/dev/null 2>&1; then
         echo "npx"
-    elif [ -f "/tmp/node-v20.11.0-linux-x64/bin/npx" ]; then
-        echo "/tmp/node-v20.11.0-linux-x64/bin/npx"
-    elif [ -f "/usr/local/bin/npx" ]; then
-        echo "/usr/local/bin/npx"
-    else
-        # Fallback: try to find npx relative to npm
-        local npm_path=$(which npm)
-        if [ -n "$npm_path" ]; then
-            local npx_path="${npm_path%/*}/npx"
-            if [ -f "$npx_path" ]; then
-                echo "$npx_path"
-                return
-            fi
-        fi
-        echo ""
+        return
     fi
+    
+    # Try common installation locations
+    local common_paths=(
+        "$DEFAULT_TEMP_DIR/node-v20.11.0-linux-x64/bin/npx"
+        "/usr/local/bin/npx"
+        "/opt/node/bin/npx"
+        "$HOME/.local/bin/npx"
+    )
+    
+    for path in "${common_paths[@]}"; do
+        if [ -f "$path" ]; then
+            echo "$path"
+            return
+        fi
+    done
+    
+    # Fallback: try to find npx relative to npm
+    local npm_path=$(which npm 2>/dev/null)
+    if [ -n "$npm_path" ]; then
+        local npx_path="${npm_path%/*}/npx"
+        if [ -f "$npx_path" ]; then
+            echo "$npx_path"
+            return
+        fi
+    fi
+    
+    echo ""
 }
 
 # Handle generation
@@ -1044,18 +1082,7 @@ full_cleanup() {
 interactive_setup() {
     echo "⚙️  Starting interactive setup..."
     
-    # Get domain if not set
-    if [[ -z "$DOMAIN" ]]; then
-        while true; do
-            read -p "Enter domain (e.g., example.com): " input_domain
-            if validate_domain "$input_domain"; then
-                export DOMAIN="$input_domain"
-                break
-            fi
-        done
-    fi
-    
-    # Get folder location if not set
+    # Get folder location and domain if not set
     if [[ -z "$FOLDER_LOCATION" ]]; then
         echo ""
         echo "Searching for domain folders..."
@@ -1065,7 +1092,28 @@ interactive_setup() {
                 echo "Invalid folder path provided"
                 return 1
             fi
+            # Extract domain from folder path
+            export DOMAIN=$(basename "$FOLDER_LOCATION")
         fi
+    fi
+    
+    # If still no domain, ask for manual input
+    if [[ -z "$DOMAIN" ]]; then
+        while true; do
+            read -p "Enter domain (e.g., example.com): " input_domain
+            if validate_domain "$input_domain"; then
+                export DOMAIN="$input_domain"
+                # If no folder location set, ask for it
+                if [[ -z "$FOLDER_LOCATION" ]]; then
+                    read -p "Enter folder location for $input_domain: " FOLDER_LOCATION
+                    if ! validate_folder_path "$FOLDER_LOCATION"; then
+                        echo "Invalid folder path provided"
+                        return 1
+                    fi
+                fi
+                break
+            fi
+        done
     fi
     
     echo ""
@@ -1076,7 +1124,7 @@ interactive_setup() {
     
     if get_user_confirmation "Proceed with setup?"; then
         # Create domain-specific data directory
-        DATA_DIR="/tmp/product_generator_data_${DOMAIN}"
+        DATA_DIR="$DEFAULT_TEMP_DIR/product_generator_data_${DOMAIN}"
         LOG_FILE="$DATA_DIR/product_generator.log"
         SETUP_MARKER_FILE="$DATA_DIR/.setup_completed"
         CREDENTIALS_FILE="$DATA_DIR/database_credentials.conf"
@@ -1238,6 +1286,15 @@ main() {
                 echo "  --cleanup-only       Remove node_modules and exit"
                 echo "  --non-interactive    Run in non-interactive mode (original behavior)"
                 echo "  --help, -h           Show this help message"
+                echo ""
+                echo "Environment Variables:"
+                echo "  WEB_ROOT             Web server root directory (default: /var/www)"
+                echo "  TEMP_DIR             Temporary files directory (default: /tmp)"
+                echo ""
+                echo "Examples:"
+                echo "  ./run.sh                                    # Interactive mode"
+                echo "  WEB_ROOT=\"/home/sites\" ./run.sh            # Custom web root"
+                echo "  TEMP_DIR=\"/var/tmp\" ./run.sh               # Custom temp directory"
                 exit 0 ;;
             *) shift ;;
         esac
@@ -1355,6 +1412,14 @@ main() {
                 echo "  --cleanup-only       Remove node_modules and exit"
                 echo "  --non-interactive    Run in non-interactive mode (original behavior)"
                 echo "  --help, -h           Show this help message"
+                echo ""
+                echo "Environment Variables:"
+                echo "  WEB_ROOT             Web server root directory (default: /var/www)"
+                echo "  TEMP_DIR             Temporary files directory (default: /tmp)"
+                echo ""
+                echo "Current Configuration:"
+                echo "  Web Root: $DEFAULT_WEB_ROOT"
+                echo "  Temp Directory: $DEFAULT_TEMP_DIR"
                 echo ""
                 read -p "Press Enter to continue..."
                 ;;

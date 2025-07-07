@@ -1,9 +1,17 @@
 #!/bin/bash
 
 # Minimalistic Static WooCommerce Setup Script
-# Version: 2.0
+# Version: 2.1 - Configurable Paths
+#
+# Configuration (environment variables):
+# - WEB_ROOT: Web server root directory (default: /var/www)
+# - APACHE_SITES_DIR: Apache sites directory (default: /etc/apache2/sites-available)
 
 set -e
+
+# Configurable directories
+DEFAULT_WEB_ROOT="${WEB_ROOT:-/var/www}"
+APACHE_SITES_DIR="${APACHE_SITES_DIR:-/etc/apache2/sites-available}"
 
 # Check if running as root
 if [[ $EUID -ne 0 ]]; then
@@ -30,7 +38,8 @@ detect_domain_folders() {
     local folders=()
     
     # Look for common web directories
-    for base_dir in /var/www /home /opt/www /usr/local/www; do
+    local web_dirs=("$DEFAULT_WEB_ROOT" "/var/www" "/home" "/opt/www" "/usr/local/www" "/srv/www")
+    for base_dir in "${web_dirs[@]}"; do
         if [[ -d "$base_dir" ]]; then
             while IFS= read -r -d '' folder; do
                 if [[ -d "$folder" && "$folder" != "$base_dir" ]]; then
@@ -121,7 +130,7 @@ create_directories() {
 # Create Apache configuration
 create_apache_config() {
     echo "Creating Apache configuration..."
-    local config_file="/etc/apache2/sites-available/${DOMAIN}.conf"
+    local config_file="$APACHE_SITES_DIR/${DOMAIN}.conf"
     
     cat > "$config_file" <<EOF
 <VirtualHost *:80>

@@ -128,7 +128,8 @@
       "Bash(rar:*)",
       "Bash(unrar:*)",
       "Bash(./test.sh:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(apache2ctl:*)"
     ],
     "deny": []
   }

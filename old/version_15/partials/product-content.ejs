@@ -1,0 +1,94 @@
+    <main class="container my-5">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="main-image-container">
+                    <img id="mainImage" src="<%= image %>" alt="<%= title %>" class="img-fluid main-product-image">
+                    <div class="image-overlay">
+                        <i class="fas fa-expand-arrows-alt zoom-icon"></i>
+                    </div>
+                </div>
+            
+                <div class="thumbnail-container d-flex justify-content-center mt-3" id="thumbnailSlider">
+                    <img src="<%= image %>" alt="<%= title %>" class="img-thumbnail thumbnail-image active" style="width: 80px; cursor: pointer;">
+                    <img src="<%= image %>" alt="<%= title %>" class="img-thumbnail thumbnail-image" style="width: 80px; cursor: pointer;">
+                    <img src="<%= image %>" alt="<%= title %>" class="img-thumbnail thumbnail-image" style="width: 80px; cursor: pointer;">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="product-info">
+                    <h1 class="product-title"><%= title %></h1>
+                    <div class="product-category">
+                        <span class="category-badge"><%= category %></span>
+                    </div>
+                    <div class="product-rating">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span class="rating-text">(4.5/5) - 127 reviews</span>
+                    </div>
+                    <p class="product-short-description"><%= shortDescription %></p>
+                    
+                    <div class="product-features">
+                        <div class="feature-item">
+                            <i class="fas fa-shipping-fast"></i>
+                            <span>Free Shipping</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Quality Guarantee</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-undo-alt"></i>
+                            <span>30-Day Returns</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-12 col-lg-3">
+                <div class="add-to-cart-section">
+                    <div class="price-display">
+                        <span class="price-currency"><%= config.branding.currency %></span><%= price %>
+                    </div>
+                    <p class="text-danger"> Shipping cost extra*</p>
+                    <form id="orderForm" class="order-form">
+                        <div class="number-input">
+                            <button type="button" onclick="changeValue(-1)">−</button>
+                            <input type="number" id="number" value="0" min="0" max="100" name="quantity">
+                            <button type="button" onclick="changeValue(1)">+</button>
+                        </div>
+                    
+                        <button type="submit" class="add-to-cart-button">Place order</button>
+                    </form>
+                </div>
+
+                <div class="mt-4 add-to-cart-section-bottom">
+                    <ul class="list-unstyled">
+                        <li><span>✔️</span> Guaranteed delivery</li>
+                        <li><span>✔️</span> PAN India shipping</li>
+                        <li><span>✔️</span> 100% Secure payment system</li>
+                        <li><span>✔️</span> Dispatch Regular orders in 48 Hours</li>
+                        <li><span>✔️</span> Dispatch Pre-orders in 30-45 days</li>
+                        <li><span>✔️</span> Returns accepted. Fast refund</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <section class="mt-5 Description-section">
+            <div class="container">
+                <div class="Description">
+                    <h4 class="description-toggle">
+                        Description
+                        <span class="arrow open">▼</span>
+                    </h4>
+                </div>
+                <div class="Description-details description">
+                    <%= description %>
+                </div>
+            </div>
+        </section>
+    </main>

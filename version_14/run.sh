@@ -3,7 +3,7 @@ set -e
 
 # Minimal Product Page Generator
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATA_DIR="/tmp/product_generator_data" # Use temp directory to avoid cluttering project
+DATA_DIR="./data_default" # Use local directory for persistent storage
 LOG_FILE="$DATA_DIR/product_generator.log"
 SETUP_MARKER_FILE="$DATA_DIR/.setup_completed"
 CREDENTIALS_FILE="$DATA_DIR/database_credentials.conf"
@@ -38,7 +38,7 @@ log_message() {
 get_credentials_file() {
     local domain=$1
     if [[ -n "$domain" ]]; then
-        local domain_data_dir="/tmp/product_generator_data_${domain}"
+        local domain_data_dir="./data_${domain}"
         mkdir -p "$domain_data_dir"
         echo "$domain_data_dir/${domain}_database_credentials.conf"
     else
@@ -76,14 +76,16 @@ check_root_directory() {
     fi
     
     # Check if we're in the root directory (can find the script in relative path)
-    if [[ -f "generate_html_from_csv/version_12/run.sh" && -f "generate_html_from_csv/version_12/package.json" ]]; then
+    local script_name=$(basename "$0")
+    local script_dir_name=$(basename "$SCRIPT_DIR")
+    if [[ -f "generate_html_from_csv/$script_dir_name/$script_name" && -f "generate_html_from_csv/$script_dir_name/package.json" ]]; then
         log_message "INFO" "✅ Script running from root directory: $current_dir"
         return 0
     fi
     
     # Neither location is correct
     echo "❌ Error: Script must be run from either:"
-    echo "  1. The script directory: /path/to/generate_html_from_csv/version_12/"
+    echo "  1. The script directory: $SCRIPT_DIR"
     echo "  2. The root directory where the codebase exists"
     echo ""
     echo "Current directory: $current_dir"
@@ -123,6 +125,9 @@ check_env_populated() {
     if grep -q "^GEMINI_API_KEY=$" "$env_file"; then
         missing_vars+=("GEMINI_API_KEY")
     fi
+    if grep -q "^GEMINI_MODEL=$" "$env_file"; then
+        missing_vars+=("GEMINI_MODEL")
+    fi
     
     if [[ ${#missing_vars[@]} -gt 0 ]]; then
         echo ""
@@ -154,6 +159,7 @@ force_populate_env() {
     echo "  DB_PORT=5432"
     echo "  WC_URL=https://your-domain.com"
     echo "  GEMINI_API_KEY=your_gemini_api_key"
+    echo "  GEMINI_MODEL=gemini-2.0-flash-exp"
     echo ""
     echo "Get your Gemini API key from: https://makersuite.google.com/app/apikey"
     echo ""
@@ -247,7 +253,8 @@ handle_database_setup() {
             if [[ "$FORCE_MODE" == "true" ]]; then
                 cleanup_database "$domain" && setup_database "$domain"
             else
-                read -p "Recreate database? (y/n): " recreate_db
+                read -p "Recreate database? (Y/n): " recreate_db
+                recreate_db=${recreate_db:-Y}  # Default to Y
                 [[ $recreate_db =~ ^[Yy]$ ]] && cleanup_database "$domain" && setup_database "$domain"
             fi
         fi
@@ -255,7 +262,8 @@ handle_database_setup() {
         if [[ "$FORCE_MODE" == "true" ]]; then
             setup_database "$domain"
         else
-            read -p "Create database? (y/n): " create_db
+            read -p "Create database? (Y/n): " create_db
+            create_db=${create_db:-Y}  # Default to Y
             [[ $create_db =~ ^[Yy]$ ]] && setup_database "$domain"
         fi
     fi
@@ -320,11 +328,12 @@ setup_chatbot_config() {
     fi
     
     # Save to config file in ecommerce_chatbot directory
-    echo "$API_URL" > ecommerce_chatbot/chatbot_config.txt
+    mkdir -p "$SCRIPT_DIR/ecommerce_chatbot"
+    echo "$API_URL" > "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt"
     log_message "INFO" "Chatbot configuration saved to ecommerce_chatbot/chatbot_config.txt"
     
     # Check if .env file exists but don't auto-populate
-    if [ -f "ecommerce_chatbot/.env" ]; then
+    if [ -f "$SCRIPT_DIR/ecommerce_chatbot/.env" ]; then
         log_message "INFO" "Found .env file - checking if properly configured"
         
         if ! check_env_populated; then
@@ -340,6 +349,7 @@ setup_chatbot_config() {
             echo "  DB_PORT=5432"
             echo "  WC_URL=https://${DOMAIN}"
             echo "  GEMINI_API_KEY=your_gemini_api_key"
+            echo "  GEMINI_MODEL=gemini-2.0-flash-exp"
             echo ""
             echo "Get your Gemini API key from: https://makersuite.google.com/app/apikey"
             echo ""
@@ -371,7 +381,8 @@ update_chatbot_config_port() {
     fi
     
     # Update config file in ecommerce_chatbot directory
-    echo "$API_URL" > ecommerce_chatbot/chatbot_config.txt
+    mkdir -p "$SCRIPT_DIR/ecommerce_chatbot"
+    echo "$API_URL" > "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt"
     log_message "INFO" "Chatbot configuration updated with actual port"
 }
 
@@ -525,8 +536,8 @@ deploy_chatbot_proxy() {
     cp "$proxy_source" "$proxy_dest"
     
     # Also copy chatbot_config.txt if it exists
-    if [[ -f "./ecommerce_chatbot/chatbot_config.txt" ]]; then
-        cp "./ecommerce_chatbot/chatbot_config.txt" "$folder_location/chatbot_config.txt"
+    if [[ -f "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt" ]]; then
+        cp "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt" "$folder_location/chatbot_config.txt"
         log_message "INFO" "chatbot_config.txt deployed to website"
     fi
     
@@ -543,8 +554,8 @@ deploy_chatbot_proxy() {
 
 # Test chatbot API connection
 test_chatbot_connection() {
-    if [ -f "ecommerce_chatbot/chatbot_config.txt" ]; then
-        local api_url=$(cat ecommerce_chatbot/chatbot_config.txt)
+    if [ -f "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt" ]; then
+        local api_url=$(cat "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt")
         log_message "INFO" "Testing chatbot API connection to: $api_url"
         
         # Try multiple times as Flask might take a moment to be ready
@@ -552,13 +563,16 @@ test_chatbot_connection() {
         local max_test_attempts=5
         
         while [ $test_attempts -lt $max_test_attempts ]; do
-            if curl -s "$api_url/message?input=hello" > /dev/null 2>&1; then
+            echo "Attempt $((test_attempts + 1))/$max_test_attempts..."
+            if curl -s --connect-timeout 5 --max-time 10 "$api_url/message?input=hello" > /dev/null 2>&1; then
                 log_message "INFO" "✅ Chatbot API connection successful!"
                 echo "✅ Chatbot is responding at: $api_url"
                 return 0
             fi
             test_attempts=$((test_attempts + 1))
-            sleep 2
+            if [ $test_attempts -lt $max_test_attempts ]; then
+                sleep 2
+            fi
         done
         
         log_message "WARN" "❌ Chatbot API connection failed after $max_test_attempts attempts"
@@ -633,7 +647,8 @@ search_domain_folders() {
             done
             echo "  $((${#folders[@]}+1)). Enter custom path"
             
-            read -p "Select option: " choice
+            read -p "Select option [1]: " choice
+            choice=${choice:-1}  # Default to 1 if empty
             if [[ "$choice" -eq $((${#folders[@]}+1)) ]]; then
                 read -p "Folder location: " FOLDER_LOCATION
             else
@@ -685,8 +700,8 @@ run_setup_script() {
 # Handle setup check
 handle_setup_check() {
     if ! check_setup_completion; then
-        echo "Setup required. Run setup.sh? (y/n):"
-        read -p "" setup_choice
+        read -p "Setup required. Run setup.sh? (Y/n): " setup_choice
+        setup_choice=${setup_choice:-Y}  # Default to Y
         case $setup_choice in
             [Yy]*) run_setup_script ;;
             *) echo "Skipping setup" ;;
@@ -704,7 +719,7 @@ setup_domain_folder() {
     export FOLDER_LOCATION
     
     # Update DATA_DIR to be domain-specific in temp directory
-    DATA_DIR="/tmp/product_generator_data_${DOMAIN}"
+    DATA_DIR="./data_${DOMAIN}"
     LOG_FILE="$DATA_DIR/product_generator.log"
     SETUP_MARKER_FILE="$DATA_DIR/.setup_completed"
     CREDENTIALS_FILE="$DATA_DIR/database_credentials.conf"
@@ -841,71 +856,30 @@ show_main_menu() {
     echo ""
     echo "Please select an option:"
     echo ""
-    echo "1. 🚀 Full Setup & Generation"
-    echo "2. ⚙️  Configuration & Setup Only"
-    echo "3. 🔄 Generate Pages Only"
-    echo "4. 🧪 Test Connections"
-    echo "5. 🧹 Cleanup Options"
-    echo "6. 🤖 Chatbot Management"
-    echo "7. ❓ Help & Options"
-    echo "8. 🚪 Exit"
+    echo "1.  🚀 Complete Setup & Generate HTML Pages"
+    echo "2.  ⚙️  Setup Configuration Only (No Generation)"
+    echo "3.  🚀 Setup & Configure E-commerce Chatbot"
+    echo "4.  🔄 Generate HTML Pages Only (Skip Setup)"
+    echo "5.  🤖 Test E-commerce Chatbot Connection"
+    echo "6.  🛑 Stop Running Chatbot Process"
+    echo "7.  📊 Show Current Chatbot Status & Logs"
+    echo "8.  🔍 Inspect SQLite Chatbot Session Database"
+    echo "9.  🧹 Clean SQLite Session Database Only"
+    echo "10. 🔍 Test MySQL and PostgreSQL Database Connections"
+    echo "11. 🔮 Test Gemini AI API Connection"
+    echo "12. 🌐 Test All Services (Database + Chatbot + API)"
+    echo "13. 📝 Check Environment Variables Configuration"
+    echo "14. 🗑️  Clean PostgreSQL Database (Remove All Data)"
+    echo "15. 🧽 Full System Cleanup (All Files & Data)"
+    echo "16. ❓ Show Help & Command Line Options"
+    echo "17. 🚪 Exit Application"
     echo ""
-    read -p "Enter your choice [1-8]: " choice
-    echo ""
-    return $choice
-}
-
-show_test_menu() {
-    echo ""
-    echo "=================================="
-    echo "      Test Connections"
-    echo "=================================="
-    echo ""
-    echo "1. 🔍 Test Database Connection"
-    echo "2. 🤖 Test Chatbot Connection"
-    echo "3. 🌐 Test All Connections"
-    echo "4. 📝 Check .env Configuration"
-    echo "5. 🔙 Back to Main Menu"
-    echo ""
-    read -p "Enter your choice [1-5]: " choice
+    read -p "Enter your choice [1-17]: " choice
     echo ""
     return $choice
 }
 
-show_cleanup_menu() {
-    echo ""
-    echo "=================================="
-    echo "      Cleanup Options"
-    echo "=================================="
-    echo ""
-    echo "1. 🧹 Remove Node Modules"
-    echo "2. 🗑️  Clean Database"
-    echo "3. 🛑 Stop Chatbot"
-    echo "4. 🧽 Full Cleanup"
-    echo "5. 🔙 Back to Main Menu"
-    echo ""
-    read -p "Enter your choice [1-5]: " choice
-    echo ""
-    return $choice
-}
-
-show_chatbot_menu() {
-    echo ""
-    echo "=================================="
-    echo "     Chatbot Management"
-    echo "=================================="
-    echo ""
-    echo "1. 🚀 Setup Chatbot"
-    echo "2. 🧪 Test Chatbot"
-    echo "3. 🛑 Stop Chatbot"
-    echo "4. 🔧 Configure .env"
-    echo "5. 📊 Show Chatbot Status"
-    echo "6. 🔙 Back to Main Menu"
-    echo ""
-    read -p "Enter your choice [1-6]: " choice
-    echo ""
-    return $choice
-}
+# Removed old submenu functions - now using single consolidated menu
 
 # Validation functions
 validate_domain() {
@@ -936,26 +910,20 @@ validate_folder_path() {
 
 get_user_confirmation() {
     local message=$1
-    echo ""
-    read -p "$message (y/n): " confirm
+    read -p "$message (Y/n): " confirm
+    confirm=${confirm:-Y}  # Default to Y if empty
     [[ $confirm =~ ^[Yy]$ ]]
 }
 
 # Test functions
 test_database_only() {
-    echo "🔍 Testing database connection..."
-    if [[ -z "$DOMAIN" ]]; then
-        echo "❌ Domain not set. Please run setup first."
+    local test_script="$SCRIPT_DIR/test_services.sh"
+    if [[ ! -f "$test_script" ]]; then
+        echo "❌ Test script not found: $test_script"
         return 1
     fi
     
-    if test_database_connection "$DOMAIN"; then
-        echo "✅ Database connection successful!"
-        return 0
-    else
-        echo "❌ Database connection failed"
-        return 1
-    fi
+    "$test_script" --database
 }
 
 test_chatbot_only() {
@@ -967,6 +935,16 @@ test_chatbot_only() {
         echo "❌ Chatbot connection failed"
         return 1
     fi
+}
+
+test_gemini_api() {
+    local test_script="$SCRIPT_DIR/test_services.sh"
+    if [[ ! -f "$test_script" ]]; then
+        echo "❌ Test script not found: $test_script"
+        return 1
+    fi
+    
+    "$test_script" --gemini
 }
 
 test_all_connections() {
@@ -986,6 +964,12 @@ test_all_connections() {
     fi
     
     echo ""
+    echo "Testing Gemini API..."
+    if ! test_gemini_api; then
+        success=false
+    fi
+    
+    echo ""
     if [[ "$success" == "true" ]]; then
         echo "✅ All connections are working properly!"
         return 0
@@ -993,6 +977,27 @@ test_all_connections() {
         echo "❌ Some connections failed. Check the logs above."
         return 1
     fi
+}
+
+# Session inspection functions
+inspect_sessions() {
+    local session_script="$SCRIPT_DIR/ecommerce_chatbot/inspect_sessions.sh"
+    if [[ ! -f "$session_script" ]]; then
+        log_error "Session inspector script not found: $session_script"
+        return 1
+    fi
+    
+    bash "$session_script"
+}
+
+clean_sessions_only() {
+    local session_script="$SCRIPT_DIR/ecommerce_chatbot/inspect_sessions.sh"
+    if [[ ! -f "$session_script" ]]; then
+        log_error "Session inspector script not found: $session_script"
+        return 1
+    fi
+    
+    bash "$session_script" --clean
 }
 
 # Cleanup functions
@@ -1028,12 +1033,53 @@ cleanup_database_interactive() {
 
 full_cleanup() {
     echo "🧽 Starting full cleanup..."
-    if get_user_confirmation "⚠️  This will clean everything (databases, chatbot, node_modules). Continue?"; then
+    if get_user_confirmation "⚠️  This will clean everything (databases, chatbot, node_modules, cache files). Continue?"; then
+        echo "Cleaning Node.js files..."
         cleanup_node_modules
+        
+        echo "Cleaning Python cache files..."
+        find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+        find . -name "*.pyc" -type f -delete 2>/dev/null || true
+        find . -name "*.pyo" -type f -delete 2>/dev/null || true
+        echo "✅ Python cache files removed"
+        
+        echo "Cleaning Python virtual environments..."
+        find . -name "venv" -type d -exec rm -rf {} + 2>/dev/null || true
+        find . -name ".venv" -type d -exec rm -rf {} + 2>/dev/null || true
+        find . -name "env" -type d -exec rm -rf {} + 2>/dev/null || true
+        echo "✅ Python virtual environments removed"
+        
+        echo "Cleaning build and cache files..."
+        rm -rf .cache 2>/dev/null || true
+        rm -rf .pytest_cache 2>/dev/null || true
+        rm -rf .coverage 2>/dev/null || true
+        rm -rf dist/ 2>/dev/null || true
+        rm -rf build/ 2>/dev/null || true
+        rm -rf *.egg-info/ 2>/dev/null || true
+        echo "✅ Build and cache files removed"
+        
+        echo "Cleaning log files..."
+        find . -name "*.log" -type f -delete 2>/dev/null || true
+        find . -name "*.tmp" -type f -delete 2>/dev/null || true
+        echo "✅ Log and temporary files removed"
+        
+        echo "Cleaning data directories..."
+        rm -rf ./data_*/ 2>/dev/null || true
+        echo "✅ Data directories removed"
+        
+        echo "Cleaning chatbot session data..."
+        rm -rf ecommerce_chatbot/tmp/ 2>/dev/null || true
+        find . -name "*.db" -path "*/ecommerce_chatbot/*" -delete 2>/dev/null || true
+        echo "✅ Chatbot session data removed"
+        
+        echo "Stopping chatbot..."
         cleanup_chatbot
+        
         if [[ -n "$DOMAIN" ]]; then
+            echo "Cleaning database for domain: $DOMAIN"
             cleanup_database "$DOMAIN"
         fi
+        
         echo "✅ Full cleanup completed"
     else
         echo "Full cleanup cancelled"
@@ -1044,27 +1090,29 @@ full_cleanup() {
 interactive_setup() {
     echo "⚙️  Starting interactive setup..."
     
-    # Get domain if not set
-    if [[ -z "$DOMAIN" ]]; then
-        while true; do
-            read -p "Enter domain (e.g., example.com): " input_domain
-            if validate_domain "$input_domain"; then
-                export DOMAIN="$input_domain"
-                break
-            fi
-        done
-    fi
-    
-    # Get folder location if not set
-    if [[ -z "$FOLDER_LOCATION" ]]; then
+    # Get domain and folder location if not set
+    if [[ -z "$DOMAIN" || -z "$FOLDER_LOCATION" ]]; then
         echo ""
         echo "Searching for domain folders..."
         search_domain_folders
         if [[ -n "$FOLDER_LOCATION" ]]; then
+            export DOMAIN=$(basename "$FOLDER_LOCATION")
             if ! validate_folder_path "$FOLDER_LOCATION"; then
                 echo "Invalid folder path provided"
                 return 1
             fi
+        else
+            # Fallback to manual input if no domains found
+            while true; do
+                read -p "Enter domain (e.g., example.com): " input_domain
+                if validate_domain "$input_domain"; then
+                    export DOMAIN="$input_domain"
+                    read -p "Enter folder location (e.g., /var/www/$input_domain): " FOLDER_LOCATION
+                    if validate_folder_path "$FOLDER_LOCATION"; then
+                        break
+                    fi
+                fi
+            done
         fi
     fi
     
@@ -1075,8 +1123,8 @@ interactive_setup() {
     echo ""
     
     if get_user_confirmation "Proceed with setup?"; then
-        # Create domain-specific data directory
-        DATA_DIR="/tmp/product_generator_data_${DOMAIN}"
+# Create domain-specific data directory
+        DATA_DIR="./data_${DOMAIN}"
         LOG_FILE="$DATA_DIR/product_generator.log"
         SETUP_MARKER_FILE="$DATA_DIR/.setup_completed"
         CREDENTIALS_FILE="$DATA_DIR/database_credentials.conf"
@@ -1149,9 +1197,12 @@ interactive_generation() {
 interactive_chatbot_setup() {
     echo "🤖 Starting chatbot setup..."
     
+    # For standalone chatbot setup, we don't need domain/folder
+    # The chatbot can run independently
     if [[ -z "$DOMAIN" || -z "$FOLDER_LOCATION" ]]; then
-        echo "❌ Domain or folder not configured. Please run setup first."
-        return 1
+        echo "ℹ️  Running standalone chatbot setup (no domain integration)"
+        FOLDER_LOCATION="/tmp/chatbot_standalone"
+        mkdir -p "$FOLDER_LOCATION"
     fi
     
     # Check .env file
@@ -1162,7 +1213,9 @@ interactive_chatbot_setup() {
         return 1
     fi
     
-    if get_user_confirmation "Proceed with chatbot setup?"; then
+    read -p "Proceed with chatbot setup? (Y/n): " chatbot_confirm
+    chatbot_confirm=${chatbot_confirm:-Y}
+    if [[ $chatbot_confirm =~ ^[Yy] ]]; then
         if setup_chatbot_complete "$FOLDER_LOCATION"; then
             echo "✅ Chatbot setup completed successfully!"
             return 0
@@ -1180,14 +1233,14 @@ show_chatbot_status() {
     echo "📊 Chatbot Status:"
     echo ""
     
-    if [ -f "ecommerce_chatbot/chatbot_config.txt" ]; then
-        echo "API URL: $(cat ecommerce_chatbot/chatbot_config.txt)"
+    if [ -f "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt" ]; then
+        echo "API URL: $(cat "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt")"
     else
         echo "❌ Chatbot configuration not found"
     fi
     
-    if [ -f "ecommerce_chatbot/flask_app.pid" ]; then
-        local flask_pid=$(cat ecommerce_chatbot/flask_app.pid)
+    if [ -f "$SCRIPT_DIR/ecommerce_chatbot/flask_app.pid" ]; then
+        local flask_pid=$(cat "$SCRIPT_DIR/ecommerce_chatbot/flask_app.pid")
         if kill -0 $flask_pid 2>/dev/null; then
             echo "Flask App: ✅ Running (PID: $flask_pid)"
         else
@@ -1255,8 +1308,8 @@ main() {
         choice=$?
         
         case $choice in
-            1) # Full Setup & Generation
-                echo "🚀 Starting full setup and generation..."
+            1) 
+                echo "🚀 Starting complete setup and generation..."
                 if interactive_setup; then
                     interactive_generation
                     if get_user_confirmation "Setup chatbot?"; then
@@ -1264,84 +1317,133 @@ main() {
                     fi
                 fi
                 ;;
-            2) # Configuration & Setup Only
+            2) 
+                echo "⚙️ Starting configuration and setup..."
                 interactive_setup
                 ;;
-            3) # Generate Pages Only
+            3) interactive_chatbot_setup ;;
+            4) 
+                echo "🔄 Starting page generation..."
                 interactive_generation
                 ;;
-            4) # Test Connections
-                while true; do
-                    show_test_menu
-                    test_choice=$?
-                    
-                    case $test_choice in
-                        1) test_database_only ;;
-                        2) test_chatbot_only ;;
-                        3) test_all_connections ;;
-                        4) 
-                            if check_env_populated; then
-                                echo "✅ .env file is properly configured"
-                            else
-                                echo "❌ .env file needs configuration"
-                            fi
-                            ;;
-                        5) break ;;
-                        *) echo "Invalid choice. Please try again." ;;
-                    esac
-                    
-                    if [[ $test_choice -ne 5 ]]; then
-                        echo ""
-                        read -p "Press Enter to continue..."
-                    fi
-                done
+            5) test_chatbot_only ;;
+            6) 
+                echo "🛑 Stopping chatbot processes..."
+                cleanup_chatbot
+                echo "✅ Chatbot stopped successfully"
+                echo ""
+                read -p "Press Enter to continue..."
                 ;;
-            5) # Cleanup Options
-                while true; do
-                    show_cleanup_menu
-                    cleanup_choice=$?
-                    
-                    case $cleanup_choice in
-                        1) cleanup_node_modules ;;
-                        2) cleanup_database_interactive ;;
-                        3) cleanup_chatbot; echo "🛑 Chatbot stopped" ;;
-                        4) full_cleanup ;;
-                        5) break ;;
-                        *) echo "Invalid choice. Please try again." ;;
-                    esac
-                    
-                    if [[ $cleanup_choice -ne 5 ]]; then
-                        echo ""
-                        read -p "Press Enter to continue..."
+            7) show_chatbot_status ;;
+            8) inspect_sessions ;;
+            9) clean_sessions_only ;;
+            10) 
+                echo "🔍 Testing Database Connections..."
+                echo ""
+                
+                # Load environment variables
+                if [[ -f "$SCRIPT_DIR/ecommerce_chatbot/.env" ]]; then
+                    source "$SCRIPT_DIR/ecommerce_chatbot/.env"
+                fi
+                
+                # Test MySQL
+                echo "📊 MySQL Database:"
+                if timeout 5 bash -c "exec 3<>/dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; then
+                    if LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu mysql \
+                        --connect-timeout=5 \
+                        -h "$DB_HOST" \
+                        -P "$DB_PORT" \
+                        -u "$DB_USER" \
+                        -p"$DB_PASSWORD" \
+                        -D "$DB_NAME" \
+                        -e "SELECT 1;" >/dev/null 2>&1; then
+                        echo "   ✅ MySQL: Connected ($DB_HOST:$DB_PORT)"
+                    else
+                        echo "   ❌ MySQL: Authentication failed"
                     fi
-                done
-                ;;
-            6) # Chatbot Management
-                while true; do
-                    show_chatbot_menu
-                    chatbot_choice=$?
-                    
-                    case $chatbot_choice in
-                        1) interactive_chatbot_setup ;;
-                        2) test_chatbot_only ;;
-                        3) cleanup_chatbot; echo "🛑 Chatbot stopped" ;;
-                        4) 
-                            echo "📝 Please edit ecommerce_chatbot/.env manually"
-                            echo "Required variables: DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, WC_URL, GEMINI_API_KEY"
-                            echo "Get Gemini API key from: https://makersuite.google.com/app/apikey"
-                            ;;
-                        5) show_chatbot_status ;;
-                        6) break ;;
-                        *) echo "Invalid choice. Please try again." ;;
-                    esac
-                    
-                    if [[ $chatbot_choice -ne 6 ]]; then
-                        echo ""
-                        read -p "Press Enter to continue..."
+                else
+                    echo "   ❌ MySQL: Cannot connect to $DB_HOST:$DB_PORT"
+                fi
+                
+                # Test PostgreSQL
+                echo ""
+                echo "🐘 PostgreSQL Database:"
+                if [[ -n "$PG_DB_HOST" && -n "$PG_DB_USER" && -n "$PG_DB_PASSWORD" && -n "$PG_DB_NAME" ]]; then
+                    if timeout 5 bash -c "exec 3<>/dev/tcp/$PG_DB_HOST/$PG_DB_PORT" 2>/dev/null; then
+                        if PGPASSWORD="$PG_DB_PASSWORD" psql \
+                            -h "$PG_DB_HOST" \
+                            -p "$PG_DB_PORT" \
+                            -U "$PG_DB_USER" \
+                            -d "$PG_DB_NAME" \
+                            -c "SELECT 1;" >/dev/null 2>&1; then
+                            echo "   ✅ PostgreSQL: Connected ($PG_DB_HOST:$PG_DB_PORT)"
+                        else
+                            echo "   ❌ PostgreSQL: Authentication failed"
+                        fi
+                    else
+                        echo "   ❌ PostgreSQL: Cannot connect to $PG_DB_HOST:$PG_DB_PORT"
                     fi
-                done
+                else
+                    echo "   ⚠️  PostgreSQL: Not configured"
+                fi
+                
+                echo ""
+                read -p "Press Enter to continue..."
                 ;;
-            7) # Help & Options
+            11) 
+                echo "🔮 Testing Gemini API..."
+                echo ""
+                
+                # Load environment variables
+                if [[ -f "$SCRIPT_DIR/ecommerce_chatbot/.env" ]]; then
+                    source "$SCRIPT_DIR/ecommerce_chatbot/.env"
+                fi
+                
+                if [[ -z "$GEMINI_API_KEY" ]]; then
+                    echo "   ❌ Gemini API: API key not configured"
+                elif [[ -z "$GEMINI_MODEL" ]]; then
+                    echo "   ❌ Gemini API: Model not configured"
+                else
+                    echo "   🔑 API Key: ${GEMINI_API_KEY:0:10}... (masked)"
+                    echo "   🤖 Model: $GEMINI_MODEL"
+                    echo ""
+                    echo "   Testing connection..."
+                    
+                    # Simple API test
+                    local test_payload='{"contents": [{"parts": [{"text": "Say: API Test OK"}]}]}'
+                    local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}"
+                    
+                    local response=$(curl -s --connect-timeout 10 --max-time 30 \
+                        -H "Content-Type: application/json" \
+                        -d "$test_payload" \
+                        "$api_url" 2>/dev/null)
+                    
+                    if [[ $? -eq 0 ]] && ! echo "$response" | grep -q '"error"' && echo "$response" | grep -q '"text"'; then
+                        echo "   ✅ Gemini API: Connected and responding"
+                    elif echo "$response" | grep -q '"error"'; then
+                        echo "   ❌ Gemini API: API error (check key/model)"
+                    else
+                        echo "   ❌ Gemini API: Connection failed"
+                    fi
+                fi
+                
+                echo ""
+                read -p "Press Enter to continue..."
+                ;;
+            12) test_all_connections ;;
+            13) 
+                echo "📝 Checking .env configuration..."
+                if check_env_populated; then
+                    echo "✅ .env file is properly configured"
+                else
+                    echo "❌ .env file needs configuration"
+                fi
+                echo ""
+                read -p "Press Enter to continue..."
+                ;;
+            14) cleanup_database_interactive ;;
+            15) full_cleanup ;;
+            16) 
                 echo "Usage: $0 [OPTIONS]"
                 echo ""
                 echo "Options:"
@@ -1358,12 +1460,12 @@ main() {
                 echo ""
                 read -p "Press Enter to continue..."
                 ;;
-            8) # Exit
+            17) 
                 echo "👋 Goodbye!"
                 exit 0
                 ;;
             *) 
-                echo "Invalid choice. Please enter a number between 1-8."
+                echo "Invalid choice. Please enter a number between 1-17."
                 sleep 2
                 ;;
         esac
@@ -1418,7 +1520,8 @@ run_original_workflow() {
             fi
         else
             echo ""
-            read -p "Do you want to setup the chatbot integration? (y/n): " setup_chatbot_choice
+            read -p "Do you want to setup the chatbot integration? (Y/n): " setup_chatbot_choice
+            setup_chatbot_choice=${setup_chatbot_choice:-Y}  # Default to Y
             if [[ $setup_chatbot_choice =~ ^[Yy]$ ]]; then
                 log_message "INFO" "Setting up chatbot integration..."
                 
@@ -1440,12 +1543,12 @@ run_original_workflow() {
         [[ -n "$DB_NAME" ]] && echo "Database: $DB_NAME"
         
         # Show chatbot status
-        if [ -f "ecommerce_chatbot/chatbot_config.txt" ]; then
-            echo "Chatbot API: $(cat ecommerce_chatbot/chatbot_config.txt)"
+        if [ -f "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt" ]; then
+            echo "Chatbot API: $(cat "$SCRIPT_DIR/ecommerce_chatbot/chatbot_config.txt")"
             echo "🤖 Chatbot is running in the background"
         fi
-        if [ -f "ecommerce_chatbot/flask_app.pid" ]; then
-            local flask_pid=$(cat ecommerce_chatbot/flask_app.pid)
+        if [ -f "$SCRIPT_DIR/ecommerce_chatbot/flask_app.pid" ]; then
+            local flask_pid=$(cat "$SCRIPT_DIR/ecommerce_chatbot/flask_app.pid")
             if kill -0 $flask_pid 2>/dev/null; then
                 echo "Flask App PID: $flask_pid (running)"
             else
@@ -1477,13 +1580,13 @@ run_original_workflow() {
 cleanup_chatbot() {
     log_message "INFO" "Cleaning up chatbot processes..."
     # Kill Flask app if running
-    if [ -f "ecommerce_chatbot/flask_app.pid" ]; then
-        local pid=$(cat ecommerce_chatbot/flask_app.pid)
+    if [ -f "$SCRIPT_DIR/ecommerce_chatbot/flask_app.pid" ]; then
+        local pid=$(cat "$SCRIPT_DIR/ecommerce_chatbot/flask_app.pid")
         if kill -0 $pid 2>/dev/null; then
             kill -9 $pid 2>/dev/null || true
             log_message "INFO" "Flask app stopped (PID: $pid)"
         fi
-        rm -f ecommerce_chatbot/flask_app.pid
+        rm -f "$SCRIPT_DIR/ecommerce_chatbot/flask_app.pid"
     fi
     
     # Also kill any python app.py processes

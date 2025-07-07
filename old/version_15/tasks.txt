@@ -1,0 +1,8 @@
+Improve product.ejs template to make it more professional
+Dont make major changes without asking me first
+Make reusable elements so that disk space is reduced
+Make category folder inside public/product and public/images so that html pages and their images remain in separate folders wrt to their catgories
+Take category name from fifth colum name categories of csv file
+Once above is done get approval
+Next improve product_with_chatbot.ejs template
+Keep lines of code minimum

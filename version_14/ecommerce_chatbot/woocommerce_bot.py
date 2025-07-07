@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 import csv
 import mysql.connector
+import psycopg2
+import psycopg2.extras
 #import gradio as gr
 import re
 from agno.storage.agent.sqlite import SqliteAgentStorage
@@ -13,18 +15,52 @@ load_dotenv()
 
 # Get API keys from environment variables
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash-exp')  # Default fallback
 
-# Database credentials
+# MySQL Database credentials (for WooCommerce)
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
+DB_PORT = int(os.getenv("DB_PORT", 3306))  # Convert to int, default to 3306
+DB_TABLE_PREFIX = os.getenv("DB_TABLE_PREFIX", "wp_")  # Default to wp_ if not set
 WC_URL = os.getenv("WC_URL")
 
+# PostgreSQL Database credentials (for products)
+PG_DB_NAME = os.getenv("PG_DB_NAME")
+PG_DB_USER = os.getenv("PG_DB_USER")
+PG_DB_PASSWORD = os.getenv("PG_DB_PASSWORD")
+PG_DB_HOST = os.getenv("PG_DB_HOST")
+PG_DB_PORT = int(os.getenv("PG_DB_PORT", 5432))  # Convert to int, default to 5432
+
 # Check if all required environment variables are set
-if not GEMINI_API_KEY or not DB_NAME or not DB_USER or not DB_PASSWORD or not DB_HOST or not WC_URL:
-    raise ValueError("Missing required environment variables")
+missing_vars = []
+if not GEMINI_API_KEY:
+    missing_vars.append("GEMINI_API_KEY")
+if not DB_NAME or not DB_USER or not DB_PASSWORD or not DB_HOST:
+    missing_vars.append("MySQL credentials (DB_NAME, DB_USER, DB_PASSWORD, DB_HOST)")
+if not WC_URL:
+    missing_vars.append("WC_URL")
+
+if missing_vars:
+    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+
+# Check PostgreSQL credentials (optional but log if incomplete)
+pg_missing = []
+if not PG_DB_NAME:
+    pg_missing.append("PG_DB_NAME")
+if not PG_DB_USER:
+    pg_missing.append("PG_DB_USER")
+if not PG_DB_PASSWORD:
+    pg_missing.append("PG_DB_PASSWORD")
+if not PG_DB_HOST:
+    pg_missing.append("PG_DB_HOST")
+
+if pg_missing:
+    print(f"Warning: PostgreSQL credentials incomplete: {', '.join(pg_missing)}")
+    print("PostgreSQL product search will be disabled.")
+else:
+    print("PostgreSQL credentials found - dual database search enabled.")
 
 def load_faq(csv_file):
     """Load FAQ data from a CSV file"""
@@ -134,11 +170,68 @@ def get_order_status(email: str = None, order_id: str = None) -> str:
         if 'mydb' in locals() and mydb:
             mydb.close()
 
-def search_products(product_name: str) -> str:
-    """Tool to search for products by name"""
-    if not product_name:
-        return "Please provide a product name to search for."
+def search_products_postgres(product_name: str) -> tuple:
+    """Search for products in PostgreSQL database"""
+    # Check if PostgreSQL is configured
+    if not PG_DB_NAME or not PG_DB_USER or not PG_DB_PASSWORD or not PG_DB_HOST:
+        return [], "PostgreSQL not configured"
     
+    # Check for placeholder values
+    if (PG_DB_NAME == "your_postgres_db_name" or 
+        PG_DB_USER == "your_postgres_user" or 
+        PG_DB_PASSWORD == "your_postgres_password"):
+        return [], "PostgreSQL has placeholder credentials"
+    
+    try:
+        conn = psycopg2.connect(
+            host=PG_DB_HOST,
+            database=PG_DB_NAME,
+            user=PG_DB_USER,
+            password=PG_DB_PASSWORD,
+            port=PG_DB_PORT
+        )
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        # Search in products table (using actual column names: title, not name)
+        query = """
+        SELECT id, title, price, category, product_link, image_url
+        FROM products 
+        WHERE title ILIKE %s
+        LIMIT 10;
+        """
+        
+        search_term = f"%{product_name}%"
+        cursor.execute(query, (search_term,))
+        results = cursor.fetchall()
+        
+        products = []
+        for row in results:
+            products.append({
+                'id': row['id'],
+                'name': row['title'],  # Map title to name for consistency
+                'price': row['price'],
+                'category': row['category'],
+                'link': row['product_link'],
+                'image_url': row['image_url'],
+                'source': 'PostgreSQL'
+            })
+        
+        return products, None
+        
+    except psycopg2.Error as e:
+        error_msg = f"PostgreSQL database error: {e}"
+        print(error_msg)
+        return [], error_msg
+    except Exception as e:
+        error_msg = f"PostgreSQL connection error: {e}"
+        print(error_msg)
+        return [], error_msg
+    finally:
+        if 'conn' in locals() and conn:
+            conn.close()
+
+def search_products_mysql(product_name: str) -> list:
+    """Search for products in MySQL/WooCommerce database"""
     try:
         mydb = mysql.connector.connect(
             host=DB_HOST,
@@ -149,15 +242,15 @@ def search_products(product_name: str) -> str:
         )
         mycursor = mydb.cursor()
 
-        # Use parameterized query for security
-        query = """
+        # Use parameterized query for security (using configurable table prefix)
+        query = f"""
         SELECT
             p.ID,
             p.post_title,
             pm.meta_value 
         FROM
-            wp_posts p 
-        LEFT JOIN wp_postmeta pm ON p.ID = pm.post_id 
+            {DB_TABLE_PREFIX}posts p 
+        LEFT JOIN {DB_TABLE_PREFIX}postmeta pm ON p.ID = pm.post_id 
         WHERE
             p.post_type = 'product'
             AND p.post_status = 'publish'
@@ -166,35 +259,82 @@ def search_products(product_name: str) -> str:
         LIMIT 10;
         """
         
-        # Add wildcards for the LIKE query
         search_term = f"%{product_name}%"
         mycursor.execute(query, (search_term,))
-        
         myresult = mycursor.fetchall()
         
-        if myresult:
-            result = ["Here are the products that match your search:"]
-            for row in myresult:
-                product_id = row[0]
-                product_title = row[1]
-                product_link = f"{WC_URL}/product/{product_title.lower().replace(' ', '-')}"
-                product_price = "Rs. " + row[2]
-                result.append(f"Product: {product_title}")
-                result.append(f"Link: {product_link}")
-                result.append(f"Price: {product_price}")
-                result.append("---")
-            
-            return "\n".join(result)
-        else:
-            return f"No products found with the name '{product_name}'."
-
+        products = []
+        for row in myresult:
+            product_id = row[0]
+            product_title = row[1]
+            product_link = f"{WC_URL}/product/{product_title.lower().replace(' ', '-')}"
+            product_price = row[2]
+            products.append({
+                'id': product_id,
+                'name': product_title,
+                'price': product_price,
+                'link': product_link,
+                'source': 'WooCommerce'
+            })
+        
+        return products
+        
     except mysql.connector.Error as e:
-        return f"Database error: {e}"
+        print(f"MySQL error: {e}")
+        return []
     except Exception as e:
-        return f"An error occurred: {e}"
+        print(f"MySQL search error: {e}")
+        return []
     finally:
         if 'mydb' in locals() and mydb:
             mydb.close()
+
+def search_products(product_name: str) -> str:
+    """Tool to search for products by name in both MySQL and PostgreSQL databases"""
+    if not product_name:
+        return "Please provide a product name to search for."
+    
+    # Search in both databases
+    mysql_products = search_products_mysql(product_name)
+    postgres_products, pg_error = search_products_postgres(product_name)
+    
+    # Combine results
+    all_products = mysql_products + postgres_products
+    
+    if all_products:
+        if len(all_products) == 1:
+            # Single product - conversational format like the working example
+            product = all_products[0]
+            response = f"Yes, we have a **{product['name']}** available for Rs. {product['price']}."
+            
+            if product.get('category'):
+                response += f" You can find it in the {product['category']} category"
+            
+            if product.get('link'):
+                response += f" [here]({product['link']})."
+            else:
+                response += "."
+                
+            return response
+        else:
+            # Multiple products - conversational list format
+            response = f"Yes, we have several products matching '{product_name}':\n\n"
+            
+            for i, product in enumerate(all_products[:5], 1):  # Limit to 5 products
+                response += f"{i}. **{product['name']}** - Rs. {product['price']}"
+                if product.get('category'):
+                    response += f" ({product['category']})"
+                if product.get('link'):
+                    response += f" [View Product]({product['link']})"
+                response += "\n"
+            
+            if len(all_products) > 5:
+                response += f"\n...and {len(all_products) - 5} more products available."
+            
+            return response
+    else:
+        # No products found - conversational format like the working example
+        return f"I'm sorry, I couldn't find any products that match \"{product_name}\" in our catalog. Please check back later as our inventory is constantly updated. Is there anything else I can help you with?"
 
 # Load FAQ data
 # Get the directory where this script is located
@@ -210,7 +350,7 @@ faq_agent = Agent(
     name="FAQ Agent",
     role="Answer questions based on the provided FAQ data",
     model=Gemini(
-        id="gemini-2.0-flash-exp",
+        id=GEMINI_MODEL,
         api_key=GEMINI_API_KEY,
         generative_model_kwargs={},
         generation_config={}
@@ -228,7 +368,7 @@ order_status_agent = Agent(
     name="Order Status Agent",
     role="Retrieve order status based on email or order ID",
     model=Gemini(
-        id="gemini-2.0-flash-exp",
+        id=GEMINI_MODEL,
         api_key=GEMINI_API_KEY,
         generative_model_kwargs={},
         generation_config={}
@@ -247,7 +387,7 @@ product_search_agent = Agent(
     name="Product Search Agent",
     role="Search for products by name",
     model=Gemini(
-        id="gemini-2.0-flash-exp",
+        id=GEMINI_MODEL,
         api_key=GEMINI_API_KEY,
         generative_model_kwargs={},
         generation_config={}
@@ -269,7 +409,7 @@ agent_team = Agent(
     add_history_to_messages=True,
     num_history_responses=100,
     model=Gemini(
-        id="gemini-2.0-flash-exp",
+        id=GEMINI_MODEL,
         api_key=GEMINI_API_KEY,
         generative_model_kwargs={},
         generation_config={}

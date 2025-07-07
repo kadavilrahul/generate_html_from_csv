@@ -32,8 +32,8 @@ let csvModifiedTime = null;
 
 // Ensure the output directory exists
 function ensureOutputDir(folderLocation, cb) {
-  outputDir = path.join(folderLocation, 'public', 'products');
-  imagesDir = path.join(folderLocation, 'public', 'images');
+  outputDir = folderLocation; // Generate HTML files directly in document root
+  imagesDir = path.join(folderLocation, 'public', 'images'); // Keep images in public/images
   const domain = folderLocation.split('/').pop();
   baseUrl = `https://${domain}`;
   
@@ -77,16 +77,25 @@ async function selectTemplate() {
     console.log('\n=== Template Selection ===');
     console.log('1. Standard template (product.ejs) - No chatbot');
     console.log('2. Chatbot template (product_with_chatbot.ejs) - With chatbot integration');
+    console.log('3. Modular template (product-modular.ejs) - Optimized with reusable components');
 
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     });
 
-    rl.question('\nEnter template choice (1 or 2, or press Enter for standard): ', (answer) => {
+    rl.question('\nEnter template choice (1, 2, 3, or press Enter for modular): ', (answer) => {
       rl.close();
       
-      if (!answer.trim() || answer === '1') {
+      if (!answer.trim() || answer === '3') {
+        console.log('Selected: Modular template (product-modular.ejs)');
+        templatePath = './product-modular.ejs';
+        useChatbot = false;
+        resolve();
+        return;
+      }
+
+      if (answer === '1') {
         console.log('Selected: Standard template (product.ejs)');
         templatePath = './product.ejs';
         useChatbot = false;
@@ -102,8 +111,8 @@ async function selectTemplate() {
         return;
       }
 
-      console.log('Invalid selection. Using standard template.');
-      templatePath = './product.ejs';
+      console.log('Invalid selection. Using modular template.');
+      templatePath = './product-modular.ejs';
       useChatbot = false;
       resolve();
     });
@@ -161,18 +170,26 @@ async function selectCSVFile() {
 
 // Function to display usage help
 function displayHelp() {
-  console.log('\n=== Product Page Generator - CSV File Selection ===');
+  console.log('\n=== Product Page Generator - Enhanced with Category Organization ===');
   console.log('Usage options:');
-  console.log('1. Interactive mode: npm start (will show CSV file selection menu)');
+  console.log('1. Interactive mode: npm start (will show template and CSV file selection menu)');
   console.log('2. Command line mode: npm start -- --csvFile=your_file.csv --folderLocation=/path/to/output');
   console.log('\nTemplate options:');
   console.log('  --chatbot    Use chatbot-enabled template (product_with_chatbot.ejs)');
-  console.log('  (default)    Use standard template (product.ejs)');
+  console.log('  --modular    Use modular template with reusable components (product-modular.ejs)');
+  console.log('  (default)    Use modular template (product-modular.ejs)');
+  console.log('\nNew Features:');
+  console.log('  • Category-based folder organization in public/products and public/images');
+  console.log('  • Professional template design with enhanced styling');
+  console.log('  • Modular template system for reduced disk space');
+  console.log('  • Improved mobile responsiveness');
   console.log('\nExamples:');
   console.log('  npm start -- --csvFile=products_01.csv');
   console.log('  npm start -- --csvFile=products_01.csv --chatbot');
+  console.log('  npm start -- --csvFile=products_01.csv --modular');
   console.log('  npm start -- --csvFile=products_backup.csv --folderLocation=/var/www/mysite.com --chatbot');
   console.log('\nNote: If csvFile is not specified or not found, interactive selection menu will be shown.');
+  console.log('Files will be organized by category: /public/products/{category}/ and /public/images/{category}/');
   console.log('======================================================\n');
 }
 
@@ -200,9 +217,10 @@ async function generateProductsCSV(products, sourceFileName) {
   const csvRows = products.map(product => {
     const title = `"${product.Title.replace(/"/g, '""')}"`;
     const price = product['Regular Price'];
-    const productLink = `"${baseUrl}/public/products/${sanitizeFilename(product.Title)}"`;
+    const categoryName = sanitizeFilename(product.Category);
+    const productLink = `"${baseUrl}/${categoryName}-${sanitizeFilename(product.Title)}.html"`;
     const category = `"${product.Category.replace(/"/g, '""')}"`;
-    const imageUrl = `"${baseUrl}/public/images/${sanitizeFilename(product.Title)}${path.extname(product.Image) || '.jpg'}"`;
+    const imageUrl = `"${baseUrl}/public/images/${categoryName}/${sanitizeFilename(product.Title)}${path.extname(product.Image) || '.jpg'}"`;
     
     return `${title},${price},${productLink},${category},${imageUrl}`;
   }).join('\n');
@@ -226,13 +244,16 @@ async function generateSitemap(products, sourceFileName) {
         <lastmod>${new Date().toISOString()}</lastmod>
         <priority>1.0</priority>
     </url>
-    ${products.map(product => `
+    ${products.map(product => {
+      const categoryName = sanitizeFilename(product.Category);
+      return `
     <url>
-        <loc>${baseUrl}/public/products/${sanitizeFilename(product.Title)}</loc>
+        <loc>${baseUrl}/${categoryName}-${sanitizeFilename(product.Title)}.html</loc>
         <lastmod>${new Date().toISOString()}</lastmod>
         <priority>0.8</priority>
     </url>
-    `).join('')}
+    `;
+    }).join('')}
 </urlset>`;
 
   // Generate filename based on source CSV file
@@ -401,10 +422,11 @@ async function insertProducts(config, products) {
     for (const product of products) {
       const title = product.Title;
       const price = parseInt(product['Regular Price']) || 0;
-      const productLink = `${baseUrl}/public/products/${sanitizeFilename(product.Title)}`;
+      const categoryName = sanitizeFilename(product.Category);
+      const productLink = `${baseUrl}/${categoryName}-${sanitizeFilename(product.Title)}.html`;
       const category = product.Category;
       const imageExt = path.extname(product.Image) || '.jpg';
-      const imageUrl = `${baseUrl}/public/images/${sanitizeFilename(product.Title)}${imageExt}`;
+      const imageUrl = `${baseUrl}/public/images/${categoryName}/${sanitizeFilename(product.Title)}${imageExt}`;
       
       // Check if product already exists
       const checkQuery = 'SELECT id FROM products WHERE title = $1';
@@ -507,11 +529,23 @@ function csvToHtml(folderLocation, selectedCsvPath, cb) {
       ensureOutputDir(folderLocation, () => {}); // Empty callback since we're handling async differently
       for (const product of jsonObj) {
         try {
+          // Sanitize category name for folder structure
+          const categoryName = sanitizeFilename(product.Category);
+          
+          // Create category-specific directories for images only
+          const categoryImagesDir = path.join(imagesDir, categoryName);
+          
+          // Ensure category image directory exists
+          if (!fs.existsSync(categoryImagesDir)) {
+            fs.mkdirSync(categoryImagesDir, { recursive: true });
+            console.log(`Created category images directory: ${categoryImagesDir}`);
+          }
+
           // Generate image filename from title
           const imageExt = path.extname(product.Image) || '.jpg';
           const imageName = `${sanitizeFilename(product.Title)}${imageExt}`;
-          const imagePath = path.join(imagesDir, imageName);
-          const relativeImagePath = `/public/images/${imageName}`;
+          const imagePath = path.join(categoryImagesDir, imageName);
+          const relativeImagePath = `/public/images/${categoryName}/${imageName}`;
 
           // Download image
           await downloadImage(product.Image, imagePath);
@@ -539,10 +573,17 @@ function csvToHtml(folderLocation, selectedCsvPath, cb) {
 
           // Generate HTML using EJS template
           const template = fs.readFileSync(templatePath, 'utf8');
-          const htmlContent = ejs.render(template, templateData);
+          
+          // Set EJS options for modular template to find partials
+          const ejsOptions = {};
+          if (templatePath.includes('modular')) {
+            ejsOptions.views = ['./']; // Set current directory as views root for partials
+          }
+          
+          const htmlContent = ejs.render(template, templateData, ejsOptions);
 
-          // Save HTML file
-          const htmlFilename = `${sanitizeFilename(product.Title)}.html`;
+          // Save HTML file in document root with category prefix
+          const htmlFilename = `${categoryName}-${sanitizeFilename(product.Title)}.html`;
           const htmlPath = path.join(outputDir, htmlFilename);
           fs.writeFileSync(htmlPath, htmlContent);
 
@@ -589,6 +630,9 @@ gulp.task('default', async (cb) => {
     if (arg === '--chatbot') {
       useChatbot = true;
     }
+    if (arg === '--modular') {
+      templatePath = './product-modular.ejs';
+    }
   });
   
   if (showHelp) {
@@ -598,13 +642,13 @@ gulp.task('default', async (cb) => {
   }
   
   
-  // Set template based on chatbot option
+  // Set template based on options
   if (useChatbot) {
     templatePath = './product_with_chatbot.ejs';
     console.log('Using chatbot-enabled template');
-  } else {
-    templatePath = './product.ejs';
-    console.log('Using standard template');
+  } else if (!templatePath) {
+    templatePath = './product-modular.ejs';
+    console.log('Using modular template (default)');
   }
   
   try {

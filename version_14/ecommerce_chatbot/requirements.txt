@@ -4,5 +4,6 @@ agno
 google-generativeai
 python-dotenv
 mysql-connector-python
+psycopg2-binary
 sqlalchemy
 google-genai

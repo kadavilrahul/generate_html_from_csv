@@ -161,14 +161,14 @@ EOF
 # Create .htaccess
 create_htaccess() {
     echo "Creating .htaccess..."
-    cat > "$WEBSITE_DIR/public/products/.htaccess" <<EOF
+    cat > "$WEBSITE_DIR/public/products/.htaccess" <<'EOF'
 DirectoryIndex index.html index.php
 Options -Indexes
 
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)/?$ \$1.html [L]
+RewriteRule ^([^/]+)/?$ $1.html [L]
 
 <IfModule mod_expires.c>
     ExpiresActive On

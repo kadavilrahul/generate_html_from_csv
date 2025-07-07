@@ -33,7 +33,10 @@
       }
 
       body{
-        background-color: rgb(237, 237, 237);
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+        line-height: 1.6;
     }
     #logo {
         width: 200px;
@@ -218,12 +221,19 @@
     height: 100%;
 }
 .add-to-cart-section{
-    background-color: white;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
     text-align: center;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding: 30px 20px;
     border-radius: 20px;
-    box-shadow: 0 3px 6px -4px rgb(0 0 0 / .16), 0 3px 6px rgb(0 0 0 / .23);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.add-to-cart-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 .number-input {
             display: flex;
@@ -270,17 +280,44 @@
             border-left: 1px solid #ddd; /* Seamless border between button and input */
         }
         .add-to-cart-button{
-            background-color: #4b9cd2;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-radius: 20px;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 40px;
+            font-weight: 600;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .add-to-cart-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-to-cart-button:active {
+            transform: translateY(0);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
         }
         .add-to-cart-section-bottom{
-            background-color: white;
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
             border-radius: 20px;
-            box-shadow: 0 3px 6px -4px rgb(0 0 0 / .16), 0 3px 6px rgb(0 0 0 / .23);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
             padding: 30px;
+            transition: all 0.3s ease;
+        }
 
-
+        .add-to-cart-section-bottom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
         }
         .add-to-cart-section-bottom li{
             border-bottom: 1px solid grey;
@@ -288,9 +325,19 @@
             font-size: 16px;
         }
         .Description-section{
-            background-color: white;
-            padding: 30px;
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 40px;
             border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            margin-top: 30px;
+        }
+
+        .Description-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
         }
         .Description-section .description-toggle {
     cursor: pointer;
@@ -457,6 +504,208 @@ footer{
     
 }
 
+/* Enhanced Product Image Styles */
+.main-image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.main-image-container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.main-product-image {
+    width: 100%;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    border-radius: 15px;
+}
+
+.main-image-container:hover .image-overlay {
+    opacity: 1;
+}
+
+.zoom-icon {
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.thumbnail-container {
+    gap: 10px;
+    padding: 10px 0;
+}
+
+.thumbnail-image {
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.thumbnail-image.active {
+    opacity: 1;
+    border: 2px solid #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.thumbnail-image:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Enhanced Product Info Styles */
+.product-info {
+    padding: 20px 0;
+}
+
+.product-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    line-height: 1.3;
+}
+
+.product-category {
+    margin-bottom: 15px;
+}
+
+.category-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.stars {
+    display: flex;
+    gap: 2px;
+}
+
+.stars i {
+    color: #ffa500;
+    font-size: 14px;
+}
+
+.rating-text {
+    color: #666;
+    font-size: 14px;
+}
+
+.product-short-description {
+    color: #555;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.product-features {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.feature-item i {
+    color: #667eea;
+    font-size: 16px;
+    width: 20px;
+}
+
+/* Enhanced Price Display */
+.price-display {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.price-currency {
+    font-size: 24px;
+    color: #667eea;
+}
+
+/* Enhanced Success/Error Messages */
+.success-message, .error-message {
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.success-message {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.error-message {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 768px) {
+    .product-title {
+        font-size: 24px;
+    }
+    
+    .price-display {
+        font-size: 28px;
+    }
+    
+    .product-features {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    
+    .feature-item {
+        flex: 1 1 45%;
+        font-size: 12px;
+    }
+    
+    .main-image-container {
+        margin-bottom: 20px;
+    }
+}
+
   </style>
 </head>
 <body>
@@ -572,25 +821,60 @@ footer{
         <div class="row">
             <div class="col-md-6">
                 <!-- Main Image -->
-                <img id="mainImage" src="<%= image %>" alt="<%= title %>" class="img-fluid mb-3">
+                <div class="main-image-container">
+                    <img id="mainImage" src="<%= image %>" alt="<%= title %>" class="img-fluid main-product-image">
+                    <div class="image-overlay">
+                        <i class="fas fa-expand-arrows-alt zoom-icon"></i>
+                    </div>
+                </div>
             
                 <!-- Thumbnails -->
-                <div class="d-flex" id="thumbnailSlider">
-                    <img src="<%= image %>" alt="<%= title %>" class="img-thumbnail me-2" style="width: 80px; cursor: pointer;">
-                    <img src="<%= image %>" alt="<%= title %>" class="img-thumbnail me-2" style="width: 80px; cursor: pointer;">
-                    <img src="<%= image %>" alt="<%= title %>" class="img-thumbnail" style="width: 80px; cursor: pointer;">
+                <div class="thumbnail-container d-flex justify-content-center mt-3" id="thumbnailSlider">
+                    <img src="<%= image %>" alt="<%= title %>" class="img-thumbnail thumbnail-image active" style="width: 80px; cursor: pointer;">
+                    <img src="<%= image %>" alt="<%= title %>" class="img-thumbnail thumbnail-image" style="width: 80px; cursor: pointer;">
+                    <img src="<%= image %>" alt="<%= title %>" class="img-thumbnail thumbnail-image" style="width: 80px; cursor: pointer;">
                 </div>
             </div>
             <div class="col-md-3">
-                <h2><%= title %></h2>
-                <p class="text-muted">Category: <%= category %></p>
-                <p class="text-muted"><%= shortDescription %></p>
-                
+                <div class="product-info">
+                    <h1 class="product-title"><%= title %></h1>
+                    <div class="product-category">
+                        <span class="category-badge"><%= category %></span>
+                    </div>
+                    <div class="product-rating">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span class="rating-text">(4.5/5) - 127 reviews</span>
+                    </div>
+                    <p class="product-short-description"><%= shortDescription %></p>
+                    
+                    <div class="product-features">
+                        <div class="feature-item">
+                            <i class="fas fa-shipping-fast"></i>
+                            <span>Free Shipping</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Quality Guarantee</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-undo-alt"></i>
+                            <span>30-Day Returns</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="col-md-3 col-12 col-lg-3">
 
                 <div class="add-to-cart-section">
-                    <h3 ><%= config.branding.currency %><%= price %></h3>
+                    <div class="price-display">
+                        <span class="price-currency"><%= config.branding.currency %></span><%= price %>
+                    </div>
                     <p class="text-danger"> Shipping cost extra*</p>
                     <form id="orderForm" class="order-form">
                         <div class="number-input">
