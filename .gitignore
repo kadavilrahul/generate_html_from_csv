@@ -5,3 +5,4 @@ node_modules/
 coding_task_manager/
 venv/
 package-lock.json
+config.json
