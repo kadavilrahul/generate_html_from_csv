@@ -1,6 +1,0 @@
-Chatbot has error connecting to MySQL database
-This was an earlier error while connecting to it from remote server
-
-
-Options that are tested and working in main menu
- 16, 17
