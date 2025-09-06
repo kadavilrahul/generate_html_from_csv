@@ -4,19 +4,29 @@ Convert CSV product data into high-performance static HTML pages with an intelli
 
 ## 🚀 Quick Start
 
-1. **Run the interactive setup:**
+### Installation
+
+1. **Clone the repository:**
+
    ```bash
-   chmod +x run.sh
-   ./run.sh
+   git clone https://github.com/kadavilrahul/generate_html_from_csv.git
    ```
 
-2. **Follow the menu prompts:**
+   ```bash
+   cd generate_html_from_csv
+   ```
+
+   ```bash
+   bash run.sh
+   ```
+
+3. **Follow the menu prompts:**
    - Choose "Full Setup & Generation" 
    - Enter your domain and folder location
    - Configure database settings
    - Optionally enable chatbot
 
-3. **Configure chatbot (if enabled):**
+4. **Configure chatbot (if enabled):**
    ```bash
    nano ecommerce_chatbot/.env
    ```
@@ -194,6 +204,27 @@ How do I reset my password?,Click "Forgot Password" and follow instructions.
 2. **CDN**: Configure CloudFlare or similar
 3. **Monitoring**: Set up uptime monitoring
 4. **Analytics**: Add Google Analytics
+
+## 📦 Repository
+
+### Clone the Project
+```bash
+# HTTPS
+git clone https://github.com/kadavilrahul/generate_html_from_csv.git
+
+# SSH
+git clone git@github.com:kadavilrahul/generate_html_from_csv.git
+```
+
+### Contributing
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 
