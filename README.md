@@ -1,231 +1,148 @@
-# Static WooCommerce Product Pages Generator with AI Chatbot
-
-Convert CSV product data into high-performance static HTML pages with an intelligent AI chatbot assistant.
+# E-commerce Chatbot with WooCommerce Integration
+A Flask-based AI chatbot that integrates with WooCommerce stores to provide customer support, order tracking, and product search capabilities.
 
 ## 🚀 Quick Start
 
-### Installation
+### Clone Repository
 
-1. **Clone the repository:**
+```bash
+git clone https://github.com/kadavilrahul/generate_html_from_csv
+```
 
+```bash
+cd generate_html_from_csv
+```
+
+```bash
+bash run.sh
+```
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+1. Python 3.8 or higher installed
+2. Node.js version 16 or higher
+3. PostgreSQL database server
+4. MySQL database server (for WooCommerce)
+5. Apache2 web server
+6. Git for version control
+
+## Installation Steps
+
+1. Configure your environment variables:
    ```bash
-   git clone https://github.com/kadavilrahul/generate_html_from_csv.git
+   cp ecommerce_chatbot/sample.env ecommerce_chatbot/.env
+   nano ecommerce_chatbot/.env  # Edit with your actual values
    ```
 
+2. Get your Gemini API key from Google AI Studio:
+   - Visit https://makersuite.google.com/app/apikey
+   - Create a new API key and add it to your .env file
+
+3. Set up your database credentials in the .env file:
    ```bash
-   cd generate_html_from_csv
+   # Add your MySQL WooCommerce database details
+   # Add your PostgreSQL product database details
+   # Configure your WooCommerce store URL
    ```
 
+4. Install Python dependencies (handled automatically by run.sh):
    ```bash
-   bash run.sh
+   cd ecommerce_chatbot && pip install -r requirements.txt
    ```
 
-3. **Follow the menu prompts:**
-   - Choose "Full Setup & Generation" 
-   - Enter your domain and folder location
-   - Configure database settings
-   - Optionally enable chatbot
+## Features
 
-4. **Configure chatbot (if enabled):**
+1. **AI-Powered Customer Support** - Uses Google Gemini AI to answer customer questions
+2. **Order Status Tracking** - Checks WooCommerce orders by email or order ID
+3. **Product Search** - Searches both MySQL and PostgreSQL product databases
+4. **FAQ System** - Loads answers from CSV file for common questions
+5. **Web Interface** - Complete HTML/CSS/JS frontend for chat interactions
+6. **Session Management** - Stores conversation history using SQLite
+7. **Multi-Database Support** - Works with both WooCommerce MySQL and PostgreSQL
+
+## Project Structure
+
+1. `ecommerce_chatbot/` - Main chatbot application directory (8 files)
+2. `ecommerce_chatbot/app.py` - Flask web server that handles API requests
+3. `ecommerce_chatbot/woocommerce_bot.py` - Core chatbot logic with AI agents
+4. `ecommerce_chatbot/requirements.txt` - Python package dependencies
+5. `ecommerce_chatbot/faq.csv` - FAQ questions and answers database
+6. `ecommerce_chatbot/chatbot/` - Frontend HTML interface with CSS/JS
+7. `run.sh` - Main setup script that configures everything automatically
+8. `setup.sh` - Apache and system configuration script
+
+## Configuration
+
+### Environment Variables (.env file)
+
+1. **Database Settings**:
    ```bash
-   nano ecommerce_chatbot/.env
+   DB_NAME=your_woocommerce_database
+   DB_USER=your_mysql_username
+   DB_PASSWORD=your_mysql_password
+   DB_HOST=localhost
    ```
-   Fill in: `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `WC_URL`, `GEMINI_API_KEY`
 
-## ✨ Features
+2. **AI Configuration**:
+   ```bash
+   GEMINI_API_KEY=your_gemini_api_key
+   GEMINI_MODEL=gemini-2.0-flash
+   ```
 
-### 📄 Static Page Generator
-- **Fast**: Serves pages directly via Apache (5-10x faster than WordPress)
-- **SEO-friendly**: Clean URLs without file extensions
-- **Incremental**: Only processes changed products
-- **Auto-images**: Downloads and optimizes product images
+3. **WooCommerce Integration**:
+   ```bash
+   WC_URL=https://your-store.com
+   DB_TABLE_PREFIX=wp_
+   ```
 
-### 🤖 AI Chatbot Assistant
-- **Order tracking**: Check status using email or order ID
-- **Product search**: Find products in your catalog
-- **FAQ support**: Answer customer questions automatically
-- **Easy integration**: REST API for any website
+## Usage Instructions
 
-## 🛠️ Technology Stack
+1. **Start the chatbot**:
+   ```bash
+   bash run.sh  # This handles everything automatically
+   ```
 
-- **Backend**: Node.js, Gulp, EJS
-- **AI Chatbot**: Python, Flask, Google Gemini AI
-- **Database**: PostgreSQL (products), MySQL (WooCommerce)
-- **Web Server**: Apache2 with mod_rewrite
+2. **Access the web interface**:
+   - The chatbot will be available at the URL shown in terminal
+   - Usually runs on http://your-server-ip:5000
 
-## 📋 Requirements
+3. **Test chatbot features**:
+   - Ask about products: "Do you have iPhone cases?"
+   - Check orders: "What's the status of order #123?"
+   - Get help: "How do I return an item?"
 
-- Ubuntu/Debian server
-- Node.js and npm
-- Python 3.12+
-- Apache2, PostgreSQL, MySQL
-- Root access
+## API Endpoints
 
-## 🎯 Usage Commands
+1. **GET /message** - Main chatbot endpoint
+   - Parameter: `input` (user message)
+   - Returns: JSON response with chatbot reply
 
-```bash
-# Interactive mode (default)
-./run.sh
+## Troubleshooting
 
-# Non-interactive mode (original behavior)
-./run.sh --non-interactive
+1. **Problem**: Chatbot not responding
+   **Solution**: Check if Flask app is running with `ps aux | grep python`
 
-# Force regeneration of all products
-./run.sh --force
+2. **Problem**: Database connection failed
+   **Solution**: Verify your .env file has correct database credentials
 
-# Enable chatbot automatically
-./run.sh --enable-chatbot
+3. **Problem**: Gemini API errors
+   **Solution**: Check your API key is valid and has sufficient quota
 
-# Check environment configuration
-./run.sh --check-env
+4. **Problem**: Port already in use
+   **Solution**: The app automatically finds available ports 5000-5010
 
-# Stop chatbot processes
-./run.sh --stop-chatbot
+5. **Problem**: Missing Python packages
+   **Solution**: Run `pip install -r ecommerce_chatbot/requirements.txt`
 
-# Show help
-./run.sh --help
-```
+## Getting Help
 
-## 📁 CSV Format
+If you need assistance:
+1. Check the troubleshooting section above
+2. Review the .env configuration file
+3. Check Flask application logs in ecommerce_chatbot/flask_app.log
+4. Create an issue on the GitHub repository
 
-Your `products.csv` should have these columns:
-```csv
-Image,Title,Regular Price,Category,Short_description,description
-```
-
-## 🌐 Generated Structure
-
-```
-/var/www/yourdomain.com/
-├── [WordPress files]           # Your existing WordPress
-├── public/
-│   ├── products/              # Generated HTML files
-│   │   └── .htaccess         # URL rewriting rules
-│   └── images/               # Product images
-├── chatbot_proxy.php          # Chatbot API proxy (if enabled)
-└── chatbot_config.txt         # Chatbot configuration (if enabled)
-```
-
-**URLs:**
-- WordPress: `yourdomain.com/`
-- Products: `yourdomain.com/products/product-name`
-- Images: `yourdomain.com/images/image-name.jpg`
-
-## 🧪 Testing
-
-### Test Static Pages
-```bash
-curl -I http://yourdomain.com/products/your-product-name
-```
-
-### Test Chatbot
-```bash
-curl "http://yourdomain.com/chatbot_proxy.php?input=hello"
-```
-
-## 🚀 Performance Benefits
-
-| Metric | WordPress | Static Pages |
-|--------|-----------|-------------|
-| Load Time | 2-5 seconds | 0.2-0.5 seconds |
-| Database Queries | Multiple per request | Zero |
-| Server Resources | High | Minimal |
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-**403 Forbidden:**
-```bash
-sudo chown -R www-data:www-data /var/www/yourdomain.com/public
-sudo chmod -R 755 /var/www/yourdomain.com/public
-```
-
-**mod_rewrite not working:**
-```bash
-sudo a2enmod rewrite
-sudo systemctl restart apache2
-```
-
-**Chatbot not responding:**
-```bash
-# Check if Flask is running
-ps aux | grep "python.*app.py"
-
-# Check configuration
-cat ecommerce_chatbot/chatbot_config.txt
-```
-
-### Log Files
-- Apache Error: `/var/log/apache2/error_yourdomain.com.log`
-- Chatbot: `ecommerce_chatbot/flask_app.log`
-
-## 🔒 Security Features
-
-- ✅ Directory browsing disabled
-- ✅ CSV files blocked from direct access
-- ✅ Proper file permissions
-- ✅ Environment variables secured
-- ✅ CORS properly configured
-
-## 📱 Chatbot Integration
-
-Add this to your HTML pages:
-
-```html
-<!-- Floating Chatbot Widget -->
-<div style="position: fixed; bottom: 24px; right: 24px; width: 750px; height: 550px; z-index: 9999;">
-  <iframe 
-    src="chatbot/widget.html" 
-    frameborder="0" 
-    style="width:100%; height:100%;" 
-    scrolling="no"
-    title="Customer Support Chatbot">
-  </iframe>
-</div>
-```
-
-## 🔄 Customization
-
-### FAQ Database
-Edit `ecommerce_chatbot/faq.csv`:
-```csv
-question,answer
-How do I reset my password?,Click "Forgot Password" and follow instructions.
-```
-
-### Product Templates
-- `product.ejs`: Basic product page
-- `product_with_chatbot.ejs`: Product page with chatbot
-
-## 🚀 Next Steps
-
-1. **SSL Certificate**: Set up HTTPS with Let's Encrypt
-2. **CDN**: Configure CloudFlare or similar
-3. **Monitoring**: Set up uptime monitoring
-4. **Analytics**: Add Google Analytics
-
-## 📦 Repository
-
-### Clone the Project
-```bash
-# HTTPS
-git clone https://github.com/kadavilrahul/generate_html_from_csv.git
-
-# SSH
-git clone git@github.com:kadavilrahul/generate_html_from_csv.git
-```
-
-### Contributing
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-**That's it! 🚀 You now have high-performance static product pages with an intelligent AI chatbot.**
+## License
+MIT License - You can freely use this project
